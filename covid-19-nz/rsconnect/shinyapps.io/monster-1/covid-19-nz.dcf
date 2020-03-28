@@ -1,0 +1,10 @@
+name: covid-19-nz
+title:
+username:
+account: monster-1
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 1997116
+bundleId: 2925183
+url: https://monster-1.shinyapps.io/covid-19-nz/
+when: 1585181037.76892

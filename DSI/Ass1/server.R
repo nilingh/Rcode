@@ -160,7 +160,7 @@ shinyServer(function(input, output, session) {
   # })
   
   output$ui_tab_plot <- renderPlot({
-      data_in_tab1 <- my_tb %>% select(input$col_tab,c("ID","Date","Author"))
+      data_in_tab1 <- my_tb %>% dplyr::select(input$col_tab,c("ID","Date","Author"))
       data_in_tab1$Date <- as.character(my_tb$Date)
       data_in_tab1$rownum <- rownames(data_in_tab1)
       tabplot::tableplot(data_in_tab1, sortCol = input$col_sort_tab)
@@ -186,7 +186,7 @@ shinyServer(function(input, output, session) {
   })
   
   output$MixedPairs <- renderPlot({
-    data_mix <- my_tb %>% select(input$col_mix, input$col_mix_cate)
+    data_mix <- my_tb %>% dplyr::select(input$col_mix, input$col_mix_cate)
     data_mix[input$col_mix_cate] <- factor(data_mix[[input$col_mix_cate]])
     GGally::ggpairs(data = data_mix,  mapping = ggplot2::aes(colour = data_mix[[input$col_mix_cate]]), title = "Mixed pairs of Ass1 data")
   })

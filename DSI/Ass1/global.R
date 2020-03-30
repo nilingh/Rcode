@@ -1,5 +1,7 @@
 library(shiny)
 library(tidyverse)
+library(dplyr)
+
 # load plot packages
 library(DT) # DT::datatable
 library(vcd) # vcd::mosaic
@@ -29,9 +31,9 @@ sort_cols <- all_cols[1:14][-4]
 choice_tab_col <- c("rownum","ID","Date","Author")
 
 # subset of dataset, also tibble
-my_numeric_data <- my_tb %>% select(1,15:44)
-my_cate_data <- my_tb %>% select(3,5:14)
-my_cate_data <- my_tb %>% select(5:9)
+my_numeric_data <- my_tb %>% dplyr::select(1,15:44)
+my_cate_data <- my_tb %>% dplyr::select(3,5:14)
+my_cate_data <- my_tb %>% dplyr::select(5:9)
 my_cate_data <- my_cate_data %>%
   mutate(Priority = case_when(
     Priority == "Low" & !is.na(Priority) ~ 1,

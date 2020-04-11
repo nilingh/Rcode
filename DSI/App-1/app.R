@@ -33,9 +33,9 @@ ui <- fluidPage(
                                        "Percent Asian"),
                         selected = "Percent White"),
             
-            sliderInput("range", 
-                        label = "Range of interest:",
-                        min = 0, max = 100, value = c(0, 100)),
+            # Copy the line below to make a slider range 
+            sliderInput("slider2", label = h3("Slider Range"), min = 0, 
+                        max = 100, value = c(40, 60))
             
         ),
         
@@ -44,7 +44,8 @@ ui <- fluidPage(
             h3("Third level title in mainPanel"),
             h2("Second level title in mainPanel"),
             h1("First level title in mainPanel"),
-            plotOutput("distPlot")
+            plotOutput("distPlot"),
+            verbatimTextOutput("range")
         )
     )
 )
@@ -70,6 +71,8 @@ server <- function(input, output) {
              main = "Histogram of waiting times")
         
     })
+    
+    output$range <- renderPrint({ input$slider2[1] })
     
 }
 

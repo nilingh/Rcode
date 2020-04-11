@@ -1,0 +1,10 @@
+name: ana_plot
+title:
+username:
+account: monster-1
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 2079201
+bundleId: 2998804
+url: https://monster-1.shinyapps.io/ana_plot/
+when: 1586572053.69425

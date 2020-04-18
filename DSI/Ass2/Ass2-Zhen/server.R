@@ -63,36 +63,37 @@ shinyServer(function(input, output) {
     output$Plot_SNcomp_pcr <- renderPlot({ selectNcomp(rv_pcr$pcr_mod, method = input$he2, plot = TRUE) })
     ##########################
     # Partof code in fitting shrinkage model are based on ISLR 6.5.3 Lab
+    shrink_mod0 <-  glmnet(x_train,y_train,alpha = 0, lambda = grid, exact = TRUE, standardize = TRUE)
+    cv_shrink_mod0 <- cv.glmnet(x_train,y_train,alpha = 0, lambda = grid, nfolds = 10,exact = TRUE, standardize = TRUE)
     output$Shrink_plot0 <- renderPlot({
-        shrink_mod0 <-  glmnet(x_train,y_train,alpha = 0, lambda = grid, exact = TRUE, standardize = TRUE)
         # use CV to choose lambda
         set.seed(1)
-        cv_shrink_mod0 <-  cv.glmnet(x_train,y_train,alpha = 0, lambda = grid, nfolds = 10,exact = TRUE, standardize = TRUE)
         par(mfrow=c(1,2))
         plot(shrink_mod0, main = "Ridge coefficients vary with lambda")
         plot(cv_shrink_mod0, main = "Choosing ridge model using CV")
 
     })
+    shrink_mod1 <- glmnet(x_train,y_train,alpha = 1, lambda = grid, exact = TRUE, standardize = TRUE)
+    cv_shrink_mod1 <-  cv.glmnet(x_train,y_train,alpha = 1, lambda = grid, nfolds = 10,exact = TRUE, standardize = TRUE)
+    
     output$Shrink_plot1 <- renderPlot({
-        shrink_mod1 <-  glmnet(x_train,y_train,alpha = 1, lambda = grid, exact = TRUE, standardize = TRUE)
         # use CV to choose lambda
         set.seed(1)
-        cv_shrink_mod1 <-  cv.glmnet(x_train,y_train,alpha = 1, lambda = grid, nfolds = 10,exact = TRUE, standardize = TRUE)
         par(mfrow=c(1,2))
         plot(shrink_mod1, main = "Lasso coefficients vary with lambda")
         plot(cv_shrink_mod1, main = "Choosing lasso model using CV")
     })
     
+    best_lam0 <- cv_shrink_mod0$lambda.min
+    best_lam1 <- cv_shrink_mod1$lambda.min
     output$Shrink_output <- renderPrint({
-        best_lam0 <- cv_shrink_mod0$lambda.min
-        best_lam1 <- cv_shrink_mod1$lambda.min
         print(paste("Optimal lambda of ridge regression is: ",best_lam0))
         print(paste("Optimal lambda of lasso is: ",best_lam1))
         print("----------------------------------------------------------")
         # predict in test
-        shrink_pred0 <- predict(shrink_mod0, s=best_lam, newx = x_test)
+        shrink_pred0 <- predict(shrink_mod0, s=best_lam0, newx = x_test)
         print(paste("Test MSE of ridge regression is: ",mean((shrink_pred0-y_test)^2)))
-        shrink_pred1 <- predict(shrink_mod1, s=best_lam, newx = x_test)
+        shrink_pred1 <- predict(shrink_mod1, s=best_lam1, newx = x_test)
         print(paste("Test MSE of lasso model is: ",mean((shrink_pred1-y_test)^2)))
         print("----------------------------------------------------------")
         # choosen variables

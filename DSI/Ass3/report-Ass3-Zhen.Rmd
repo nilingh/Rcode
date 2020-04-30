@@ -1,0 +1,83 @@
+---
+title: "Report-Ass3-Zhen"
+author: "Zhen Huang"
+date: "4/29/2020"
+output: html_notebook
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Understand the data and goal
+### Data types
+The target data set has 380 observations and 20 variables. 'Y' is the output variable with numeric (real) and continues negative values. So it suggested this is a regression problem.
+```{r}
+my_data <-  read.csv(file = "Ass3Data.csv", row.names = "ID")
+par(mfrow=c(1,2))
+plot(sort(my_data$Y), type = 'l', main="Rising order Y", xlab="Observations", ylab="Sorted Y")
+boxplot(my_data$Y, outline = TRUE, range = 1)
+```
+There are 19 variables could be the useful predictors. The variable "BloodType" is a factor with four levels. The rest of the predictors are numeric.
+
+# Data features
+The boxplots shows the possible outliers in those variables, which we need to be careful in the following analysis. In addition, when the IQR was increased to 2.4 then all the variables showed no outliers. The same boxplots also suggested the distribution of each predictors and there is no extremely left or right skew of the these variable.
+The missing data chart showed no obvious pattern in the order of observations.
+The correlation chart showed some interesting groups in the variables and potential relations between outcome and predictors.
+* Group1: Strong positive relationship between Reagent (D, F, H, J, L, N). Weak positive relationship between group1 and Y.
+* Group2: Strong postive relationship between Reagent (A, C, G, I). Moderate negative relationship between group 2 and Y.
+* Group3: Strong relationship between Reagent E and M.
+* Group4: Strong relationship between Reagent B and K.
+Using these groups to examine the missing pattern again and there is no strong pattern in the groups themselves.
+
+### Data roles
+The observation identifier,"ID", was loaded as row.names of dataframes, which is 100% unique.
+"BloodType" could be a potential observation stratifier. The counts of each bloodtype are showed below.
+```{r}
+table(my_data$BloodType)
+```
+Uncorrelated (or very weak) predictors are "Alchole", "Coffee", "Excercise" and "NumDocVisits", and the other numeric predictors can also have implicit data roles, such as case weights, we may explore in the following steps.
+
+## Explore the supplied methods
+Started from keeping all the default setting in the supplied method. The 'Null Model" showed RMSE 640.30, which was the lowest criterion of methods performance.
+Using 80/20 train/test data set splitting, then following a general suggestion of pre-processing [Ordering of Steps](https://tidymodels.github.io/recipes/articles/Ordering.html). The supplied steps in the example code were added into the suggested `recipe` steps for better understanding.
+1. Impute
+  knnimpute, bagimpute, medianimpute (naomit instead of imputing)
+2. Individual transformations for skewness and other issues
+  Yeojohnson, poly
+3. Discretize
+    Not using in supplied steps
+4. Create dummy variables
+  dummy
+5. Create interactions
+  Not using in supplied steps
+6. Normalization steps
+  center, scale
+7. Multivariate transformation
+  pca, pls, ica (also kpca, isomap)
+
+Two steps `step_poly` (also `step_ns`) are not used in example, but may be used to replaced a variable with new one for fitting a non-linear model.
+Filters, such as `step_nzv` and `step_corr` are not showed in above list, but would be tried later.
+All the `step_` functions are listed out on [Reference](https://tidymodels.github.io/recipes/reference/index.html)
+Additional readings:
+[机器学习模型为什么要将特征离散化](https://blog.csdn.net/weixin_34138377/article/details/94026160?utm_medium=distribute.pc_relevant.none-task-blog-BlogCommendFromBaidu-3&depth_1-utm_source=distribute.pc_relevant.none-task-blog-BlogCommendFromBaidu-3)
+
+### GLMnet
+|Model|Pre-processing|RMSE|Comments|
+|-|-|-|-|
+|GLMnet|`naomit``dummy`|250675.90|default setting, worse than Null model|
+|GLMnet|`knnimpute``dummy`|98.39|`medianimpute` had similar performances, `bagimpute` performaned a bit better but more time-consuming|
+|GLMnet|`knnimpute``Yeojohnson``dummy``center``scale`|93.73|Standardise and Normalise numeric predictors expected to improve the performance|
+|GLMnet|`knnimpute``Yeojohnson``dummy``center``scale``pca`|365.70|GLMnet Implicits feature selection, so pca did not improve the model performance|
+|GLMnet|`knnimpute``Yeojohnson``dummy``center``scale``pls`|95.02|similar situation with `pca`|
+|GLMnet|`knnimpute``Yeojohnson``dummy``center``scale``ica`|503.54|similar situation with `pca`|
+|GLMnet|`bagimpute``Yeojohnson``dummy``center``scale`|87.21|Candidate GLMnet Model|
+
+### PLS
+|Model|Pre-processing|RMSE|Comments|
+|-|-|-|-|
+|PLS|`knnimpute``dummy`|133.55||
+
+|Model|Pre-processing|RMSE|Comments|
+|-|-|-|-|
+|Rpart||163.74||

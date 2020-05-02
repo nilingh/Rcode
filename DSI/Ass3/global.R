@@ -19,6 +19,10 @@ if(!require(doParallel)) install.packages('doParallel')
 # This code implements the CARET framework: see http://topepo.github.io/caret/index.html for details
 library(caret)
 
+# for correct loading (or warning message received)
+library(plyr)
+library(dplyr)
+
 ppchoices <- c("knnimpute", "bagimpute", "medianimpute", "YeoJohnson", "naomit", "pca", "pls", "ica", "center", "scale", "nzv", "other", "dummy")
 
 startMode <- function(Parallel = TRUE) {
@@ -46,8 +50,8 @@ steps <- function(recipe, preprocess) {
       recipe <- step_bagimpute(recipe, all_predictors())
     } else if (s == "medianimpute") {
       recipe <- step_medianimpute(recipe, all_predictors(), -all_nominal())
-    } else if (s == "Yeojohnson") {
-      recipe <- step_YeoJohnson(recipe, all_predictors())
+    } else if (s == "YeoJohnson") {
+      recipe <- step_YeoJohnson(recipe, all_predictors(), -all_nominal())
     } else if (s == "naomit") {
       recipe <- step_naomit(recipe, all_predictors(), skip = TRUE)
     } else if (s == "pca") {
@@ -85,4 +89,8 @@ description <- function(name) {
 saveToRds <- function(object, name) {
   file <- paste0(".", .Platform$file.sep, "SavedModels", .Platform$file.sep, name, ".rds")
   saveRDS(object, file)
+}
+
+time_string <- function(elapse) {
+  paste(round(elapse,2),"sec")
 }

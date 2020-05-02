@@ -44,7 +44,7 @@ Using 80/20 train/test data set splitting, then following a general suggestion o
 1. Impute
   knnimpute, bagimpute, medianimpute (naomit instead of imputing)
 2. Individual transformations for skewness and other issues
-  Yeojohnson, poly
+  YeoJohnson, poly
 3. Discretize
     Not using in supplied steps
 4. Create dummy variables
@@ -62,22 +62,162 @@ All the `step_` functions are listed out on [Reference](https://tidymodels.githu
 Additional readings:
 [机器学习模型为什么要将特征离散化](https://blog.csdn.net/weixin_34138377/article/details/94026160?utm_medium=distribute.pc_relevant.none-task-blog-BlogCommendFromBaidu-3&depth_1-utm_source=distribute.pc_relevant.none-task-blog-BlogCommendFromBaidu-3)
 
-### GLMnet
-|Model|Pre-processing|RMSE|Comments|
-|-|-|-|-|
-|GLMnet|`naomit``dummy`|250675.90|default setting, worse than Null model|
-|GLMnet|`knnimpute``dummy`|98.39|`medianimpute` had similar performances, `bagimpute` performaned a bit better but more time-consuming|
-|GLMnet|`knnimpute``Yeojohnson``dummy``center``scale`|93.73|Standardise and Normalise numeric predictors expected to improve the performance|
-|GLMnet|`knnimpute``Yeojohnson``dummy``center``scale``pca`|365.70|GLMnet Implicits feature selection, so pca did not improve the model performance|
-|GLMnet|`knnimpute``Yeojohnson``dummy``center``scale``pls`|95.02|similar situation with `pca`|
-|GLMnet|`knnimpute``Yeojohnson``dummy``center``scale``ica`|503.54|similar situation with `pca`|
-|GLMnet|`bagimpute``Yeojohnson``dummy``center``scale`|87.21|Candidate GLMnet Model|
+### GLMnet (遗留grid edge)
+After implementing the choosen pre-processing steps, GLMnet got the lower metrics. While two hyper parameters alpha 0.99 and lambda 2.97 were on the edge of the `random` search.
+**Result:**
+* RMSE 90.58
+* Hyper parameter:
+  * alpha 0.99
+  * lambda 2.97
+**Pre-process**
+|Choice|Model|Pre-processing|RMSE|Time|Comments|
+|-|-|-|-|-|-|
+||GLMnet|"naomit","dummy"|250675.90||default setting, worse than Null model|
+||GLMnet|"knnimpute","dummy"|98.39||"medianimpute" had similar performances, "bagimpute" performaned a bit better but more time-consuming|
+||GLMnet|"knnimpute","dummy","center","scale"|93.73|57s|Standardise and Normalise numeric predictors expected to improve the performance|
+||GLMnet|"knnimpute","Yeojohnson","dummy","center","scale","pca"|365.70||GLMnet Implicits feature selection, so pca did not improve the model performance|
+||GLMnet|"knnimpute","Yeojohnson","dummy","center","scale","pls"|95.02||similar situation with "pca"|
+||GLMnet|"knnimpute","Yeojohnson","dummy","center","scale","ica"|503.54||similar situation with "pca"|
+|*|GLMnet|"bagimpute","Yeojohnson","dummy","center","scale"|90.58|341.07s|Candidate GLMnet Model|
+
+### lasso
+With experience in assiagnment 2, the pre-processing steps should be similar like GLMnet. The result proved this judgement.
+**Result:**
+* RMSE 90.36
+* Hyper parameter:
+  * fraction 0.79
+**Pre-process**
+|Choice|Model|Pre-processing|RMSE|Time|Comments|
+|-|-|-|-|-|-|
+|*|lasso|"bagimpute","Yeojohnson","center","scale","dummy"|90.36|63.66 sec||
+||lasso|"bagimpute","center","scale","dummy"|90.92|72.63 sec||
+
+### ridge
+**Result:**
+* RMSE 89.45
+* Hyper parameter:
+  * lambda = 0.01056009
+**Pre-process**
+|Choice|Model|Pre-processing|RMSE|Time|Comments|
+|-|-|-|-|-|-|
+|*|ridge|"bagimpute","Yeojohnson","center","scale","dummy"|89.45|150.89 sec||
 
 ### PLS
-|Model|Pre-processing|RMSE|Comments|
-|-|-|-|-|
-|PLS|`knnimpute``dummy`|133.55||
+Compare with PCR, PLS took outcome variable into account, which do improve the model performance in terms of RMSE.
+**Result:**
+* RMSE 90.73
+* Hyper parameter:
+  * ncomp 13
+**Pre-process**
+|Choice|Model|Pre-processing|RMSE|Time|Comments|
+|-|-|-|-|-|-|
+||PLS|"knnimpute","dummy"|142.36|8.26s||
+||PLS|"knnimpute","YeoJohnson","center","scale",""dummy""|96.42|8.26 sec|PLS also prefers numeric values to be normal distributed|
+|*|PLS|"bagimpute","YeoJohnson","center","scale","dummy"|90.73|118.49 sec|About tem times long to use bagimpute instead of knnimpute, slightly improve the model performance|
 
-|Model|Pre-processing|RMSE|Comments|
-|-|-|-|-|
-|Rpart||163.74||
+### kernelpls
+**Result:**
+* RMSE 90.73
+* Hyper parameter:
+  * ncomp 12
+**Pre-process**
+|Choice|Model|Pre-processing|RMSE|Time|Comments|
+|-|-|-|-|-|-|
+|*|kernelpls|"knnimpute"|184.03|178.69 sec||
+|*|kernelpls|"knnimpute","center","scale"|95.94|136.75 sec||
+||kernelpls|"knnimpute","center","scale","dummy"|95.87|136.75 sec|dummy had no significatn effect|
+
+
+### Rpart (edge 问题, case weight方法)
+**Result:**
+* RMSE 90.73
+* Hyper parameter:
+  * ncomp 13
+**Pre-process**
+|Choice|Model|Pre-processing|RMSE|Time|Comments|
+|-|-|-|-|-|-|
+||Rpart||160.49||initial setting|
+||Rpart|"center","scale"|152.68||Normalise could improve predict accuracy|
+
+### rf (Random Forest)
+**Result:**
+* RMSE 124.6
+* Hyper parameter:
+  * mtry 14
+**Pre-process**
+There is only one tuning hyper parameter `mtry` of `rf` in `caret`, the other `ntree` is set default 500. The method does not tolerant missing values, so "knnimpute" was set as default. Using out of bag instead of bootstrap to be the validation method can improve the model preformance. (Result was recorded below, but trainControl() was not modified in the final shiny app for a consistency of model selection)
+Tree-base methods may not predict accurate in regression problem, but they do offer insight of the importance of variables.
+|Choice|Model|Pre-processing|RMSE|Time|Comments|
+|-|-|-|-|-|-|
+||rf|"knnimpute"|124.80|55.22 sec||
+||rf|"knnimpute","center","scale"|124.60|102.22 sec|Normalise did not improve random forest|
+||rf|"knnimpute","center","scale"|115.32|102.22 sec|"oob" resample method improve rf method|
+
+### xgbLinear (遗留画图， 参数没有edge问题)
+The method are not tolerant to missing value and norminal variables, so "knnimpute" and "dummy" were the initial pre-process steps.
+**Result:**
+* RMSE 114.77
+* Hyper parameter:
+  * nrounds = 60, lambda = 0.251548, alpha = 0.0002734832, eta = 1.294612.
+**Pre-process**
+|Choice|Model|Pre-processing|RMSE|Time|Comments|
+|-|-|-|-|-|-|
+||xgbLinear|"knnimpute"|114.77|119.05 sec||
+
+### gbm (遗留作图，同上)
+The method can handle missing value, which is not metioned in the tags. Whether normalise nor dummy variables did not improve the method performance.
+**Result:**
+* RMSE 550.26
+* Hyper parameter:
+  * shrinkage 0.33
+  * interaction.depth 1
+  * n.minobsinnode 20
+  * n.trees 321
+**Pre-process**
+|Choice|Model|Pre-processing|RMSE|Time|Comments|
+|-|-|-|-|-|-|
+||gbm||556.26|163.29 sec||
+||gbm|"knnimpute","center","scale"|551.30|144.25 sec||
+||gbm|"knnimpute","center","scale","dummy"|550.26|114.77 sec||
+
+### glmboost mboost
+**Result:**
+* RMSE 94.44
+* Hyper parameter:
+  * mstop = 532 and prune = yes
+**Pre-process**
+|Choice|Model|Pre-processing|RMSE|Time|Comments|
+|-|-|-|-|-|-|
+||gbm||556.26|163.29 sec||
+|*|gbm|"knnimpute","dummy"|94.44|78.09 sec||
+||gbm|"knnimpute","center","scale","pls","dummy"|95.53|106.22 sec||
+
+### svmLinear kernlab
+**Result:**
+* RMSE 94.44
+* Hyper parameter:
+  * mstop = 532 and prune = yes
+**Pre-process**
+|Choice|Model|Pre-processing|RMSE|Time|Comments|
+|-|-|-|-|-|-|
+||gbm||556.26|163.29 sec||
+|*|gbm|"knnimpute","dummy"|94.44|78.09 sec||
+||gbm|"knnimpute","center","scale","pls","dummy"|95.53|106.22 sec||
+
+### gaussprRadial kernlab
+
+### rvmRadial kernlab
+
+### gaussprLinear kernlab
+
+### qrnn qrnn
+
+### brnn brnn 
+
+### kknn kknn
+
+### xyf kohonen
+
+### mlpKerasDropout keras
+
+### mlpML RSNNS

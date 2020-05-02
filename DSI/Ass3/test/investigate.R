@@ -17,11 +17,17 @@ sc_yj_estimates <- recipe(Y ~ ., data = my_data) %>%
   prep(data = my_data)  # "prep" trains the recipe (that holds the YJ transform step)
 
 sc_all_estimates <- recipe(Y ~ ., data = my_data) %>%
-  step_knnimpute(all_numeric()) %>%
-  step_YeoJohnson(all_numeric()) %>%
+  # step_bagimpute(all_numeric()) %>%
+  step_YeoJohnson(all_predictors(),-all_nominal()) %>%
   step_center(all_numeric()) %>%
   step_scale(all_numeric()) %>% 
+  step_dummy(recipe, all_predictors(), -all_numeric(), one_hot = FALSE) %>%
   prep(data = my_data)  # "prep" trains the recipe (that holds the YJ transform step)
+
+sc_ummy <- recipe(Y ~ ., data = my_data) %>%
+  step_dummy(recipe, all_predictors(), -all_numeric(), one_hot = FALSE) %>%
+  prep(data = my_data)  # "prep" trains the recipe (that holds the YJ transform step)
+
 
 par(mfrow=c(2,2))
 plot(density(na.omit(my_data$ReagentN)), main = "Sulfur before YJ transform")

@@ -37,3 +37,5 @@ vignettes/*.pdf
 
 # Rds files
 DSI/Ass3/SavedModels/*.rds
+*.rds
+*.rds

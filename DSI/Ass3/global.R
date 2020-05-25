@@ -7,6 +7,7 @@ library(DT)
 library(corrgram)
 library(visdat)
 if(!require(shinycssloaders)) install.packages('shinycssloaders')
+library(GGally)
 
 
 # The recipes package is central to preprocessing

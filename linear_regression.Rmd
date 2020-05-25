@@ -1,0 +1,80 @@
+---
+title: "Linear Regression"
+author: "Zhen Huang"
+date: "5/9/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+---
+title: Linear regression 
+date: 2020-04-27 14:30:18
+categories: 统计学习
+tags: 统计101, R
+
+---
+
+> Typically, as the flexibility of f increases, its bias decreases and its variance increases 
+>
+> — a **bias-variance trade-off**
+
+---
+
+### 预处理
+
+#### 训练/测试分割
+
+##### 方法一
+
+```{r}
+set.seed(100)  # setting seed to reproduce results of random sampling
+trainingRowIndex <- sample(1:nrow(cars), 0.8*nrow(cars))  # row indices for training data
+trainingData <- cars[trainingRowIndex, ]  # model training data
+testData  <- cars[-trainingRowIndex, ]   # test data
+```
+
+##### 方法二
+
+```{r}
+set.seed(1)
+train=sample(c(TRUE, FALSE), nrow(cars), rep=TRUE)
+test=(!train)
+```
+
+##### 方法三
+
+```{r}
+train = cars %>%
+  dplyr::sample_frac(0.5)
+
+# 相当于取了dataframe的一个否集
+test = cars %>%
+  setdiff(train)
+```
+
+##### 方法四
+
+
+
+#### 数据分布情况
+
+##### 两个变量相关性
+
+```{r}
+scatter.smooth(x=cars$speed, y=cars$dist, main="Dist ~ Speed")  # scatterplot
+```
+
+
+
+### 拟合及评估
+
+#### `lm`
+
+数据
+
+
+
+### 

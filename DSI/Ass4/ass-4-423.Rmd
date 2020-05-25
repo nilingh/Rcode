@@ -1,0 +1,209 @@
+---
+title: "Assignment 4 DATA423-20S1"
+author: "Zhen Huang"
+date: "5/22/2020"
+output:
+  html_notebook: default
+  pdf_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Question 1-Caret
+
+### Overview
+
+#### Caret
+
+The `caret` package which described, by its first author/maintainer Max Kuhn, as a unified interface of predictive models. To be specific, it provides a set of tools (functions and classes) that attempt to streamline the process for creating classification and regression models.^[The caret Package  http://topepo.github.io/caret/index.html]
+To achieve this, the package contains tools such as data splitting, pre-processing and resampling, feature selection, model tuning, performance evaluation, models comparation, visualization for the models and the other funtionality.
+
+#### Python's scikit-learn
+
+Scikit-learn is an open source machine learning library in Python that supports supervised and unsupervised learning. Similar to `caret`, it also provides various tools for model fitting, data preprocessing, model selection and evaluation, and many other utilities.^[scikit-learn.org https://scikit-learn.org/stable/getting_started.html]
+
+#### R's mlr3 package
+
+One of the design princles of `mlr3` is focusing on computation. Together, the `mlr3` package and its ecosystem provide a generic framework for machine learning tasks for the R language. Similar to `caret` wrapping function `caret::train`, `mlr3` also provide a unified interface to many popluar machine learing algorithms in R, which are objects of class `mlr3::learner`.
+^[mlr3 Manual https://mlr3book.mlr-org.com/introduction.html]
+
+### Compare and Contrast the Frameworks
+
+#### Tasks coverage
+
+The general data science tasks were taken into account in a comparison of functions coverage, which is shown in the below table^[*(asterisk) means functions or classes intergrated in the package]. 
+
+|Tasks Coverage|`caret`|`scikit-learn`|`mlr3`|
+|-|-|-|-|
+|Visualisation|*|`matplot`|`viz`|
+|Pre-processing|* or work with `recipe`|* work with `numpy`|`pipelines`|
+|Data spliting|*|*|`pipelines`|
+|Standardised training/predicting|wrapping |*|wrapping|
+|Feature engineering/selection|*|*|`filter`,`fswrap`|
+|Method categorisation|*|||
+|Resamplling|*|*|*|
+|Hyperparameter tuning|*|*|`tuning`,`hyperband`,`mbo`,`paradox`|
+|Model evaluation|*|*|`measures`|
+|Model selection|*|*||
+|Parallel Processing|*|*|*|
+
+Except for method categorisation and model selection, all three packages can handle most of the tasks in predicting models. There is much difference in details worthing to discuss, such as the way the packages achieving the tasks and specific functions or classes within these packages. 
+
+For the **vasualisation** task, `caret` offers its own functions which suitable to the specific model,  `scikit-learn` leaves this part of job to `matplot` and `mlr3` offers through its extension packge `viz`. This kind of extension functions make up the `mlr3` ecosystem, which is designed by following the principles in the `mlr3`.
+
+It is critical for predicting a good model by implementing an efficient and reasonable **pre-processing** step dealing with missing data, variable encoding and various feature transformations. Although three packages have their own tools, it is usually a good practice working together with other packages, such as `recipe` and `caret`, `numpy` and `scikit-learn`. There is a similar idea of `pipelines` in `mlr3` and `scikit-learn`, furthermore, `pipelines` in `mlr3` offers an more complicated structure by networking the pre-processing steps together in `Graph`, which is not only a visualisation for the inputs and outputs but making it possible to connect the steps of training/predicting/hyperparameter tuning with pre-processing together.
+
+Both `caret` and `mlr3` wrap the methods of other packages in R, while `scikit-learn` implements method in itself. So, depending packages need to be loaded when training/predicting models in `caret` and `mlr3` explicitly or implicitily.
+
+Both `caret` and `scikit-learn` offer a range of options in feature selection/extraction/transformation/composition whatever they called in the packages, while `mlr3` has less choice at the present and new extension `mlr3fselect` in experiment. 
+
+Similar situations show in the tasks of resampling, hyperparameter tuning, model evaluation and model seleciton when comparing three packages in these tasks.
+
+There is a very well **method categorisation** in `caret` in terms of both the quality of documents and helping tools.
+
+**Parallel Processing** is a critical ability when facing a computaional problem or a big dataset when the strategies to scale computationally, such as decreasing the data size, is not enough. There is much difference in three packages. Basically, `caret` and `scikit-learn` utilize the other backend packages in R and Python respectively to leverage the parallel processing framework ^[https://topepo.github.io/caret/parallel-processing.html] ^[https://scikit-learn.org/stable/modules/computing.html#computational-performance]. These type of parallelism is based on using multiple CPU cores in a local machine. `mlr3` uses the `future` backends for paralleliztion ^[https://mlr3book.mlr-org.com/parallelization.html#parallelization] which is different with `caret`. `future` enables `mlr3` has the ability to run on one or more local or remote machines. `spark-sklearn`  is another attemps to extending `scikit-learn` in Python world focuses on problems that have a small amount of data and that can be run in parallel ^[https://pypi.org/project/spark-sklearn/] in Spark's distributed computaional framework. 
+
+#### Models
+
+A simple comparison with the number of methods in three packages is shown below.
+^[http://topepo.github.io/caret/available-models.html] ^[https://scikit-learn.org/stable/user_guide.html] ^[https://mlr3book.mlr-org.com/list-learners.html] 
+
+||`caret`|`scikit-learn`|`mlr3`|
+|-|-|-|-|
+|Number of methods|238|140|51|
+
+The very new comer is `mlr3`, lauched from 2019, which supports less models than the other two packges. Under these simple numbers, `caret` focuses on the classification and regression methods, just as its acronym. Note that only `scikit-learn` supports cluster methods at the present, while `mlr3` is going to achieve this through its extension package `mlr3cluster` in progress. So if we are facing an unsupervied clustering problem or anomoly detection, `scikit-learn` is the most approperiate choice with its nearest neighbor and novelty and outlier detection methods.
+
+#### Strengths and weaknesses
+
+From the comparsion above we have a basic knownledge of three packages. Here below are the summary and some additional discussion in their strengths/weakensses and limitations.
+
+For `caret`, the wide range of choices in classification and regression methods is the most outstanding strength compared with the other two packages. The ability of processin data and predicting model is limited by physical components in the local machine, which may be a bottleneck of the predicting in facing big data. In addition, there is less flexiblie in building a customed deep learning neuron network, which limits the ability of `care` in handling with image/audio/video segmentation/classification problem.
+
+For `scikit-learn`, the diversity of its methods option is one of the advantages, such as clustering and outliers detection method. Scaling and parallelism limitation from local machine also exist in `scikit-learn`, but with the background of Python, `scikit-learn` can extends its application to Spark to empower the ability of distributed processing. As the changing interest in the python open source community, more contributes now toward PyTorch, Dash, which face the morden data science problems. This trend leads `scikit-learn` will focus on improving as an externel compnents which can be intergrated into these frameworks. ^[https://scikit-learn.org/dev/roadmap.html]
+
+The first release of `mlr` is in 2013, while the rewrited `mlr3` has an ambition to build a ecosystem with its extendible structure including modern features in R including R6 objects, `futuer` backend and learners suitable to build neuron networks, such as `mlr3keras` in experimental.
+
+
+---
+
+## Question 2 - Report assessment (Marks: 1/3)
+
+Example sentences:
+
+"Only 1 method has been attempted; there is no evidence the method is the best possible for the data."
+
+"The Nominal variable 'agCode' has high cardinality and should be encoded using a method that does not introduce too many numeric columns."
+
+"The report does not discuss the imbalance of males to females in the data. Is it ethical to have a single model for both males and females?"
+
+### The data
+
+The dataset of the project had 80773 observations and 21 raw variables before the pre-processing. There are five data types of these variables. Two new numeric variables were added by using feature engineering and one of them was assigned to be the outcome variable later.
+
+### Procedure followed
+
+#### Missing and imputation
+
+1. Providing the proportion of missing data, however, further investigation should be taken to determine whether there is a potential pattern of missing data in specific variables, observations or just missing at random. 
+
+2. The impuation was ahead of the training/test split and on all the data. This imputation would lead to "data leakage", particularly, when missing data is not at random. 
+
+3. The method of imputation was not presented in the report. The possible of omitting the missing data was not discussed in the report, whether omitting would be better than imputation?
+
+4. Whether the observations were removed automaticly or manually?
+
+#### Outliers
+
+5. The method and critiria detecting outliers were not discussed in the report. Whether the outliers had pattern in single varible or multivariable?
+
+6. Removing the potential outlier without given any explanations. Outliers deletion can only in the case that outliers will not occur in the future unseen data.
+
+#### Feature engineering
+
+7. An interaction terms "BodyMassIndex" was added without showing the explaination and examination of relationship between "Weight" and "Height". Although this is intuitive, some exception might exisit in the dataset.
+
+8. "Net_productivity" is a combination of three variables whose relationship to each other should also be examed. Although related variables removed from predictors later, the "Sales", "Returned_sales" might relate to "Sales_value" and "Returned_sales_value". High "Sales" or low "Returned_sales" would be the effect of "Net_productivity", thus, the potential data leakage might exist in predicting the model. 
+
+#### Role assignment
+
+9. More investigation could be done when assigning the roles of variables. As the description of variables, "Branch" is a globally unique branch name, thus, "Branch"+"Employee ID" could be an unique observation identifer. Then "Country" might be kept as an predictor in this study, because there was no other variable related to certain Nationalities that was part of the confirmation in this study.
+
+(There may has a typo in the role assignment at "Company" which does not exist in the dataset.)
+
+#### Feature Selection
+
+10. The "Weight" and "Height" were kept in the predictors, while they consited the interaction variable "BodyMassIndex". There was no discussion for the selection in the study. Whether "BodyMassIndex" is important, and whether the interpretability changed, if "Weight" and "Height" were removed.
+
+11. "Shift_length" was kept in the predictor, however it was one of the variable consised of the outcome variable. This would lead to data leakage as mentioned above.
+
+12. There were 17 predictors left. The number of predictors could lead to the curse of dimension  to one of the candidate mothod, KNN. If there is a relationship between the other numeric predictors, PCA can be used to reduce the number of variables. If there is a relationship between outcome and predictor, PLS can be used either.
+
+#### Standardising
+
+13. Standardising prior to the training/test split potentially leaks information from test to train dataset.
+
+#### Converting/Encoding
+
+14. `model.matrix` converted norminal variables into binary dummy-variables for the dataset. One more intercept column added also was added into the dataset which was suitable for linear regression model, however, neither intercept column nor dummy-variables are necessary for random forest. There was no explaination whether this transformation was used in training the random forest model.
+
+#### Resampling
+
+15. Consider there was 80773 rows in the dataset and 17 variables, a train-validation-test split could be an better alternative than simple random split into trainin/test.
+
+15. The potential risk of near zero variance was not examed in the study, so a one-time train/test split was running the risk of NZV. 
+
+16. A supervised stratified split would be an bettern alternative, if a categorical variable proved to be an approperiate group data role.
+
+#### Modelling candidates
+
+17. There is no explaination about why choosing these as candidate methods. For example, a better practice can be reporting a list of available methods for the problem and shows how to do the filtering.
+
+18. Hyperparameters chosen for the methods, however, there was one set of heyperparameter in GLMnet and Neural network methods, neither evidence nor the process were shown in the report of how these hyperparameters were chosen. For KNN and Random Forest, two different sets were shown without evidence in proving which one was better.
+
+19. Neither the results nor the process of training were reported, if tuning grid was used, was there a problem of the hyperparameter at at the edge of the grid?
+
+20. Neural network is a general name of a batch of methods/algorithms, the specific method should be reported.
+
+### Conclusion
+
+21. As resampling method was a one-time train/test split in the study, using test RMSE to choose the best model exclusivly was not the best practice. Using one of cross-validation resampling method would be an improvement.
+
+22. The test results of the other candidate methods were not reported. If the test RMSE of one method was close to the best model and it has an advantage of interpretability over neuron network, the model was also worth to report.
+
+23. The residuals had not be examed whether there was an pattern which suggests the model had not explained some other information in the dataset.
+
+24. The statistics of outcome can compared with the RMSE to show whether the model predited sensible values.
+
+25. No guarantee of the model always performs the best application. For example, there was no evidence that the model would be tolerant to the novelty of categorical data or missing data in the future unseen data.
+
+26. The economic statuses varies from differene country, thus, it was not a fair comparation in the whole dataset without stratified or grouped employees. Gender and religion also related to certain group of employees which should be considered in the study.
+
+---
+
+## Question 3 - Quality Control (Marks: 1/3)
+The file monitor.csv contains comma separated data. The columns are
+
+Timestamp              - the timestamp of a model prediction being run
+ProcessMemory      - the allocated memory (MB) of the relevant server process
+Prediction                - the value predicted by the model
+PredictionTimeMS   - the duration of the prediction task in milliseconds
+Using the supplied CSV data, generate control charts and answer the following questions:
+
+a) Is the memory usage of the server in control?
+
+b) Is the prediction time of the model in control?
+
+c) Is the stream of predictions in control?
+
+The relevant control charts would be “xbar” and “s”. You should aggregate the data per day. Assume the first 20 days of data can be used to establish the control limits for the remainder of the data.
+
+Remember to report upon runs.signal and sigma.signal from each chart summary.
+
+Have a read of https://cran.r-project.org/web/packages/qicharts/vignettes/controlcharts.html
+Present your charts and results as an R-Notebook document.  In RStudio use the menu choices: File / New File / R Notebook.
+
+
+

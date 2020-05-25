@@ -57,6 +57,38 @@ shinyServer(function(input, output, session) {
     str(getData())
   })
   
+  # ############################################################################## 
+  # output$PredictorPlot1 <- renderPlot({
+  #   d <- getData()
+  #   numeric <- sapply(d, FUN = is.numeric)
+  #   req(d, length(numeric) > 0)
+  #   GGally::ggpairs(data = d[,c(1:5,10,18,20)])
+  # })
+  # 
+  # ############################################################################## 
+  # output$PredictorPlot2 <- renderPlot({
+  #   d <- getData()
+  #   numeric <- sapply(d, FUN = is.numeric)
+  #   req(d, length(numeric) > 0)
+  #   GGally::ggpairs(data = d[,c(1:5,7,16,20)])
+  # })
+  # 
+  # ############################################################################## 
+  # output$PredictorPlot3 <- renderPlot({
+  #   d <- getData()
+  #   numeric <- sapply(d, FUN = is.numeric)
+  #   req(d, length(numeric) > 0)
+  #   GGally::ggpairs(data = d[,c(5,6,8,12,14,20)])
+  # })
+  # 
+  # ############################################################################## 
+  # output$PredictorPlot4 <- renderPlot({
+  #   d <- getData()
+  #   numeric <- sapply(d, FUN = is.numeric)
+  #   req(d, length(numeric) > 0)
+  #   GGally::ggpairs(data = d[,c(5,9,11,13,15,17,19,20)])
+  # })
+  
   ############################################################################## 
   output$Table <- DT::renderDataTable({
     d <- getData()
@@ -410,7 +442,7 @@ shinyServer(function(input, output, session) {
 
   output$xgbLinearModelPlots <- renderPlot({
     req(models$xgbLinear)
-    plot(models$xgbLinear)
+    plot(models$xgbLinear$finalModel)
   })
   
   output$xgbLinearModelSummary2 <- renderPrint({
@@ -872,7 +904,1030 @@ shinyServer(function(input, output, session) {
   
   
   
- ######################################################### End of maintenance point ####################################################
+
+############################################################ gaussprLinear ########################################################
+  getgaussprLinearRecipe <- reactive({
+    recipe <- steps(recipes::recipe(Y ~ ., data = getTrainData()), input$gaussprLinearPreprocess)
+  })
+  
+  observeEvent(
+    input$gaussprLinearGo,
+    {
+      library(kernlab)
+      method <- "gaussprLinear"
+      models[[method]] <- NULL
+      showNotification(id = method, paste("Processing", method, "model using resampling"), session = session, duration = NULL)
+      clus <- startMode(input$Parallel)
+      tryCatch({
+        models[[method]] <- caret::train(getgaussprLinearRecipe(), data = getTrainData(), method = method, metric = "RMSE", trControl = getTrControl(), tuneLength = 15)
+        saveToRds(models[[method]], "gaussprLinear")
+      }, 
+      finally = {
+        removeNotification(id = method)
+        stopMode(clus)
+      })
+    }
+  )
+  
+  output$gaussprLinearModelSummary0 <- renderText({
+    description("gaussprLinear")
+  })
+  
+  output$gaussprLinearMetrics <- renderTable({
+    req(models$gaussprLinear)
+    models$gaussprLinear$results[ which.min(models$gaussprLinear$results[, "RMSE"]), ]
+  })
+  
+  output$gaussprLinearRecipe <- renderPrint({
+    req(models$gaussprLinear)
+    models$gaussprLinear$recipe
+  })  
+  
+  output$gaussprLinearModelPlots <- renderPlot({
+    req(models$gaussprLinear)
+    plot(models$gaussprLinear)
+  })
+  
+  output$gaussprLinearFinalModelPlots <- renderPlot({
+    req(models$gaussprLinear)
+    plot(models$gaussprLinear$finalModel)
+  })
+  
+  output$gaussprLinearModelSummary2 <- renderPrint({
+    req(models$gaussprLinear)
+    print(models$gaussprLinear)
+  })
+  
+  output$gaussprLinearTimeConsuming <- renderPrint({
+    req(models$gaussprLinear)
+    et <- time_string(models$gaussprLinear$times$everything[["elapsed"]])
+    ft <- time_string(models$gaussprLinear$times$final[["elapsed"]])
+    pt <- time_string(models$gaussprLinear$times$prediction[3])
+    print(paste("Everything:", et, "Final:", ft, "Prediction:", pt))
+  })   
+  
+############################################################ mlpML ########################################################
+  getmlpMLRecipe <- reactive({
+    recipe <- steps(recipes::recipe(Y ~ ., data = getTrainData()), input$mlpMLPreprocess)
+  })
+  
+  observeEvent(
+    input$mlpMLGo,
+    {
+      library(RSNNS)
+      method <- "mlpML"
+      models[[method]] <- NULL
+      showNotification(id = method, paste("Processing", method, "model using resampling"), session = session, duration = NULL)
+      clus <- startMode(input$Parallel)
+      tryCatch({
+        models[[method]] <- caret::train(getmlpMLRecipe(), data = getTrainData(), method = method, metric = "RMSE", trControl = getTrControl(), tuneLength = 15)
+        saveToRds(models[[method]], "mlpML")
+      }, 
+      finally = {
+        removeNotification(id = method)
+        stopMode(clus)
+      })
+    }
+  )
+  
+  output$mlpMLModelSummary0 <- renderText({
+    description("mlpML")
+  })
+  
+  output$mlpMLMetrics <- renderTable({
+    req(models$mlpML)
+    models$mlpML$results[ which.min(models$mlpML$results[, "RMSE"]), ]
+  })
+  
+  output$mlpMLRecipe <- renderPrint({
+    req(models$mlpML)
+    models$mlpML$recipe
+  })  
+  
+  output$mlpMLModelPlots <- renderPlot({
+    req(models$mlpML)
+    plot(models$mlpML)
+  })
+  
+  output$mlpMLFinalModelPlots <- renderPlot({
+    req(models$mlpML)
+    plot(models$mlpML$finalModel)
+  })
+  
+  output$mlpMLModelSummary2 <- renderPrint({
+    req(models$mlpML)
+    print(models$mlpML)
+  })
+  
+  output$mlpMLTimeConsuming <- renderPrint({
+    req(models$mlpML)
+    et <- time_string(models$mlpML$times$everything[["elapsed"]])
+    ft <- time_string(models$mlpML$times$final[["elapsed"]])
+    pt <- time_string(models$mlpML$times$prediction[3])
+    print(paste("Everything:", et, "Final:", ft, "Prediction:", pt))
+  })   
+  
+  
+  
+############################################################ xyf ########################################################
+  getxyfRecipe <- reactive({
+    recipe <- steps(recipes::recipe(Y ~ ., data = getTrainData()), input$xyfPreprocess)
+  })
+  
+  observeEvent(
+    input$xyfGo,
+    {
+      library(kohonen)
+      method <- "xyf"
+      models[[method]] <- NULL
+      showNotification(id = method, paste("Processing", method, "model using resampling"), session = session, duration = NULL)
+      clus <- startMode(input$Parallel)
+      tryCatch({
+        models[[method]] <- caret::train(getxyfRecipe(), data = getTrainData(), method = method, metric = "RMSE", trControl = getTrControl(), tuneLength = 15)
+        saveToRds(models[[method]], "xyf")
+      }, 
+      finally = {
+        removeNotification(id = method)
+        stopMode(clus)
+      })
+    }
+  )
+  
+  output$xyfModelSummary0 <- renderText({
+    description("xyf")
+  })
+  
+  output$xyfMetrics <- renderTable({
+    req(models$xyf)
+    models$xyf$results[ which.min(models$xyf$results[, "RMSE"]), ]
+  })
+  
+  output$xyfRecipe <- renderPrint({
+    req(models$xyf)
+    models$xyf$recipe
+  })  
+  
+  output$xyfModelPlots <- renderPlot({
+    req(models$xyf)
+    plot(models$xyf)
+  })
+  
+  output$xyfFinalModelPlots <- renderPlot({
+    req(models$xyf)
+    plot(models$xyf$finalModel)
+  })
+  
+  output$xyfModelSummary2 <- renderPrint({
+    req(models$xyf)
+    print(models$xyf)
+  })
+  
+  output$xyfTimeConsuming <- renderPrint({
+    req(models$xyf)
+    et <- time_string(models$xyf$times$everything[["elapsed"]])
+    ft <- time_string(models$xyf$times$final[["elapsed"]])
+    pt <- time_string(models$xyf$times$prediction[3])
+    print(paste("Everything:", et, "Final:", ft, "Prediction:", pt))
+  })   
+  
+  
+  
+  
+  
+############################################################ kknn ########################################################
+  getkknnRecipe <- reactive({
+    recipe <- steps(recipes::recipe(Y ~ ., data = getTrainData()), input$kknnPreprocess)
+  })
+  
+  observeEvent(
+    input$kknnGo,
+    {
+      library(kknn)
+      method <- "kknn"
+      models[[method]] <- NULL
+      showNotification(id = method, paste("Processing", method, "model using resampling"), session = session, duration = NULL)
+      clus <- startMode(input$Parallel)
+      tryCatch({
+        models[[method]] <- caret::train(getkknnRecipe(), data = getTrainData(), method = method, metric = "RMSE", trControl = getTrControl(), tuneLength = 15)
+        saveToRds(models[[method]], "kknn")
+      }, 
+      finally = {
+        removeNotification(id = method)
+        stopMode(clus)
+      })
+    }
+  )
+  
+  output$kknnModelSummary0 <- renderText({
+    description("kknn")
+  })
+  
+  output$kknnMetrics <- renderTable({
+    req(models$kknn)
+    models$kknn$results[ which.min(models$kknn$results[, "RMSE"]), ]
+  })
+  
+  output$kknnRecipe <- renderPrint({
+    req(models$kknn)
+    models$kknn$recipe
+  })  
+  
+  output$kknnModelPlots <- renderPlot({
+    req(models$kknn)
+    plot(models$kknn)
+  })
+  
+  output$kknnFinalModelPlots <- renderPlot({
+    req(models$kknn)
+    plot(models$kknn$finalModel)
+  })
+  
+  output$kknnModelSummary2 <- renderPrint({
+    req(models$kknn)
+    print(models$kknn)
+  })
+  
+  output$kknnTimeConsuming <- renderPrint({
+    req(models$kknn)
+    et <- time_string(models$kknn$times$everything[["elapsed"]])
+    ft <- time_string(models$kknn$times$final[["elapsed"]])
+    pt <- time_string(models$kknn$times$prediction[3])
+    print(paste("Everything:", et, "Final:", ft, "Prediction:", pt))
+  })   
+  
+  
+  
+  
+  
+############################################################ brnn ########################################################
+  getbrnnRecipe <- reactive({
+    recipe <- steps(recipes::recipe(Y ~ ., data = getTrainData()), input$brnnPreprocess)
+  })
+  
+  observeEvent(
+    input$brnnGo,
+    {
+      library(brnn)
+      method <- "brnn"
+      models[[method]] <- NULL
+      showNotification(id = method, paste("Processing", method, "model using resampling"), session = session, duration = NULL)
+      clus <- startMode(input$Parallel)
+      tryCatch({
+        models[[method]] <- caret::train(getbrnnRecipe(), data = getTrainData(), method = method, metric = "RMSE", trControl = getTrControl(), tuneLength = 15)
+        saveToRds(models[[method]], "brnn")
+      }, 
+      finally = {
+        removeNotification(id = method)
+        stopMode(clus)
+      })
+    }
+  )
+  
+  output$brnnModelSummary0 <- renderText({
+    description("brnn")
+  })
+  
+  output$brnnMetrics <- renderTable({
+    req(models$brnn)
+    models$brnn$results[ which.min(models$brnn$results[, "RMSE"]), ]
+  })
+  
+  output$brnnRecipe <- renderPrint({
+    req(models$brnn)
+    models$brnn$recipe
+  })  
+  
+  output$brnnModelPlots <- renderPlot({
+    req(models$brnn)
+    plot(models$brnn)
+  })
+  
+  output$brnnFinalModelPlots <- renderPlot({
+    req(models$brnn)
+    plot(models$brnn$finalModel)
+  })
+  
+  output$brnnModelSummary2 <- renderPrint({
+    req(models$brnn)
+    print(models$brnn)
+  })
+  
+  output$brnnTimeConsuming <- renderPrint({
+    req(models$brnn)
+    et <- time_string(models$brnn$times$everything[["elapsed"]])
+    ft <- time_string(models$brnn$times$final[["elapsed"]])
+    pt <- time_string(models$brnn$times$prediction[3])
+    print(paste("Everything:", et, "Final:", ft, "Prediction:", pt))
+  })   
+  
+  
+  
+  
+  
+  
+############################################################ qrnn ########################################################
+  getqrnnRecipe <- reactive({
+    recipe <- steps(recipes::recipe(Y ~ ., data = getTrainData()), input$qrnnPreprocess)
+  })
+  
+  observeEvent(
+    input$qrnnGo,
+    {
+      library(qrnn)
+      method <- "qrnn"
+      models[[method]] <- NULL
+      showNotification(id = method, paste("Processing", method, "model using resampling"), session = session, duration = NULL)
+      clus <- startMode(input$Parallel)
+      tryCatch({
+        models[[method]] <- caret::train(getqrnnRecipe(), data = getTrainData(), method = method, metric = "RMSE", trControl = getTrControl(), tuneLength = 15)
+        saveToRds(models[[method]], "qrnn")
+      }, 
+      finally = {
+        removeNotification(id = method)
+        stopMode(clus)
+      })
+    }
+  )
+  
+  output$qrnnModelSummary0 <- renderText({
+    description("qrnn")
+  })
+  
+  output$qrnnMetrics <- renderTable({
+    req(models$qrnn)
+    models$qrnn$results[ which.min(models$qrnn$results[, "RMSE"]), ]
+  })
+  
+  output$qrnnRecipe <- renderPrint({
+    req(models$qrnn)
+    models$qrnn$recipe
+  })  
+  
+  output$qrnnModelPlots <- renderPlot({
+    req(models$qrnn)
+    plot(models$qrnn)
+  })
+  
+  output$qrnnFinalModelPlots <- renderPlot({
+    req(models$qrnn)
+    plot(models$qrnn$finalModel)
+  })
+  
+  output$qrnnModelSummary2 <- renderPrint({
+    req(models$qrnn)
+    print(models$qrnn)
+  })
+  
+  output$qrnnTimeConsuming <- renderPrint({
+    req(models$qrnn)
+    et <- time_string(models$qrnn$times$everything[["elapsed"]])
+    ft <- time_string(models$qrnn$times$final[["elapsed"]])
+    pt <- time_string(models$qrnn$times$prediction[3])
+    print(paste("Everything:", et, "Final:", ft, "Prediction:", pt))
+  })   
+  
+############################################################ rvmRadial ########################################################
+  getrvmRadialRecipe <- reactive({
+    recipe <- steps(recipes::recipe(Y ~ ., data = getTrainData()), input$rvmRadialPreprocess)
+  })
+  
+  observeEvent(
+    input$rvmRadialGo,
+    {
+      library(kernlab)
+      method <- "rvmRadial"
+      models[[method]] <- NULL
+      showNotification(id = method, paste("Processing", method, "model using resampling"), session = session, duration = NULL)
+      clus <- startMode(input$Parallel)
+      tryCatch({
+        models[[method]] <- caret::train(getrvmRadialRecipe(), data = getTrainData(), method = method, metric = "RMSE", trControl = getTrControl(), tuneLength = 15)
+        saveToRds(models[[method]], "rvmRadial")
+      }, 
+      finally = {
+        removeNotification(id = method)
+        stopMode(clus)
+      })
+    }
+  )
+  
+  output$rvmRadialModelSummary0 <- renderText({
+    description("rvmRadial")
+  })
+  
+  output$rvmRadialMetrics <- renderTable({
+    req(models$rvmRadial)
+    models$rvmRadial$results[ which.min(models$rvmRadial$results[, "RMSE"]), ]
+  })
+  
+  output$rvmRadialRecipe <- renderPrint({
+    req(models$rvmRadial)
+    models$rvmRadial$recipe
+  })  
+  
+  output$rvmRadialModelPlots <- renderPlot({
+    req(models$rvmRadial)
+    plot(models$rvmRadial)
+  })
+  
+  output$rvmRadialFinalModelPlots <- renderPlot({
+    req(models$rvmRadial)
+    plot(models$rvmRadial$finalModel)
+  })
+  
+  output$rvmRadialModelSummary2 <- renderPrint({
+    req(models$rvmRadial)
+    print(models$rvmRadial)
+  })
+  
+  output$rvmRadialTimeConsuming <- renderPrint({
+    req(models$rvmRadial)
+    et <- time_string(models$rvmRadial$times$everything[["elapsed"]])
+    ft <- time_string(models$rvmRadial$times$final[["elapsed"]])
+    pt <- time_string(models$rvmRadial$times$prediction[3])
+    print(paste("Everything:", et, "Final:", ft, "Prediction:", pt))
+  })   
+  
+  
+############################################################ glmStepAIC ########################################################
+  getglmStepAICRecipe <- reactive({
+    recipe <- steps(recipes::recipe(Y ~ ., data = getTrainData()), input$glmStepAICPreprocess)
+  })
+  
+  observeEvent(
+    input$glmStepAICGo,
+    {
+      library(MASS)
+      method <- "glmStepAIC"
+      models[[method]] <- NULL
+      showNotification(id = method, paste("Processing", method, "model using resampling"), session = session, duration = NULL)
+      clus <- startMode(input$Parallel)
+      tryCatch({
+        models[[method]] <- caret::train(getglmStepAICRecipe(), data = getTrainData(), method = method, metric = "RMSE", trControl = getTrControl(), tuneLength = 15)
+        saveToRds(models[[method]], "glmStepAIC")
+      }, 
+      finally = {
+        removeNotification(id = method)
+        stopMode(clus)
+      })
+    }
+  )
+  
+  output$glmStepAICModelSummary0 <- renderText({
+    description("glmStepAIC")
+  })
+  
+  output$glmStepAICMetrics <- renderTable({
+    req(models$glmStepAIC)
+    models$glmStepAIC$results[ which.min(models$glmStepAIC$results[, "RMSE"]), ]
+  })
+  
+  output$glmStepAICRecipe <- renderPrint({
+    req(models$glmStepAIC)
+    models$glmStepAIC$recipe
+  })  
+  
+  output$glmStepAICModelPlots <- renderPlot({
+    req(models$glmStepAIC)
+    plot(models$glmStepAIC)
+  })
+  
+  output$glmStepAICFinalModelPlots <- renderPlot({
+    req(models$glmStepAIC)
+    plot(models$glmStepAIC$finalModel)
+  })
+  
+  output$glmStepAICModelSummary2 <- renderPrint({
+    req(models$glmStepAIC)
+    print(models$glmStepAIC)
+  })
+  
+  output$glmStepAICTimeConsuming <- renderPrint({
+    req(models$glmStepAIC)
+    et <- time_string(models$glmStepAIC$times$everything[["elapsed"]])
+    ft <- time_string(models$glmStepAIC$times$final[["elapsed"]])
+    pt <- time_string(models$glmStepAIC$times$prediction[3])
+    print(paste("Everything:", et, "Final:", ft, "Prediction:", pt))
+  })   
+  
+  
+  
+############################################################ pcaNNet ########################################################
+  getpcaNNetRecipe <- reactive({
+    recipe <- steps(recipes::recipe(Y ~ ., data = getTrainData()), input$pcaNNetPreprocess)
+  })
+  
+  observeEvent(
+    input$pcaNNetGo,
+    {
+      library(nnet)
+      method <- "pcaNNet"
+      models[[method]] <- NULL
+      showNotification(id = method, paste("Processing", method, "model using resampling"), session = session, duration = NULL)
+      clus <- startMode(input$Parallel)
+      tryCatch({
+        models[[method]] <- caret::train(getpcaNNetRecipe(), data = getTrainData(), method = method, metric = "RMSE", trControl = getTrControl(), tuneLength = 15)
+        saveToRds(models[[method]], "pcaNNet")
+      }, 
+      finally = {
+        removeNotification(id = method)
+        stopMode(clus)
+      })
+    }
+  )
+  
+  output$pcaNNetModelSummary0 <- renderText({
+    description("pcaNNet")
+  })
+  
+  output$pcaNNetMetrics <- renderTable({
+    req(models$pcaNNet)
+    models$pcaNNet$results[ which.min(models$pcaNNet$results[, "RMSE"]), ]
+  })
+  
+  output$pcaNNetRecipe <- renderPrint({
+    req(models$pcaNNet)
+    models$pcaNNet$recipe
+  })  
+  
+  output$pcaNNetModelPlots <- renderPlot({
+    req(models$pcaNNet)
+    plot(models$pcaNNet)
+  })
+  
+  output$pcaNNetFinalModelPlots <- renderPlot({
+    req(models$pcaNNet)
+    plot(models$pcaNNet$finalModel)
+  })
+  
+  output$pcaNNetModelSummary2 <- renderPrint({
+    req(models$pcaNNet)
+    print(models$pcaNNet)
+  })
+  
+  output$pcaNNetTimeConsuming <- renderPrint({
+    req(models$pcaNNet)
+    et <- time_string(models$pcaNNet$times$everything[["elapsed"]])
+    ft <- time_string(models$pcaNNet$times$final[["elapsed"]])
+    pt <- time_string(models$pcaNNet$times$prediction[3])
+    print(paste("Everything:", et, "Final:", ft, "Prediction:", pt))
+  })   
+  
+  
+  
+  
+############################################################ GFS.LT.RS ########################################################
+  getGFS.LT.RSRecipe <- reactive({
+    recipe <- steps(recipes::recipe(Y ~ ., data = getTrainData()), input$GFS.LT.RSPreprocess)
+  })
+  
+  observeEvent(
+    input$GFS.LT.RSGo,
+    {
+      library(frbs)
+      method <- "GFS.LT.RS"
+      models[[method]] <- NULL
+      showNotification(id = method, paste("Processing", method, "model using resampling"), session = session, duration = NULL)
+      clus <- startMode(input$Parallel)
+      tryCatch({
+        models[[method]] <- caret::train(getGFS.LT.RSRecipe(), data = getTrainData(), method = method, metric = "RMSE", trControl = getTrControl(), tuneLength = 15)
+        saveToRds(models[[method]], "GFS.LT.RS")
+      }, 
+      finally = {
+        removeNotification(id = method)
+        stopMode(clus)
+      })
+    }
+  )
+  
+  output$GFS.LT.RSModelSummary0 <- renderText({
+    description("GFS.LT.RS")
+  })
+  
+  output$GFS.LT.RSMetrics <- renderTable({
+    req(models$GFS.LT.RS)
+    models$GFS.LT.RS$results[ which.min(models$GFS.LT.RS$results[, "RMSE"]), ]
+  })
+  
+  output$GFS.LT.RSRecipe <- renderPrint({
+    req(models$GFS.LT.RS)
+    models$GFS.LT.RS$recipe
+  })  
+  
+  output$GFS.LT.RSModelPlots <- renderPlot({
+    req(models$GFS.LT.RS)
+    plot(models$GFS.LT.RS)
+  })
+  
+  output$GFS.LT.RSFinalModelPlots <- renderPlot({
+    req(models$GFS.LT.RS)
+    plot(models$GFS.LT.RS$finalModel)
+  })
+  
+  output$GFS.LT.RSModelSummary2 <- renderPrint({
+    req(models$GFS.LT.RS)
+    print(models$GFS.LT.RS)
+  })
+  
+  output$GFS.LT.RSTimeConsuming <- renderPrint({
+    req(models$GFS.LT.RS)
+    et <- time_string(models$GFS.LT.RS$times$everything[["elapsed"]])
+    ft <- time_string(models$GFS.LT.RS$times$final[["elapsed"]])
+    pt <- time_string(models$GFS.LT.RS$times$prediction[3])
+    print(paste("Everything:", et, "Final:", ft, "Prediction:", pt))
+  })   
+  
+  
+  
+  
+  
+############################################################ spikeslab ########################################################
+  getspikeslabRecipe <- reactive({
+    recipe <- steps(recipes::recipe(Y ~ ., data = getTrainData()), input$spikeslabPreprocess)
+  })
+  
+  observeEvent(
+    input$spikeslabGo,
+    {
+      library(spikeslab)
+      method <- "spikeslab"
+      models[[method]] <- NULL
+      showNotification(id = method, paste("Processing", method, "model using resampling"), session = session, duration = NULL)
+      clus <- startMode(input$Parallel)
+      tryCatch({
+        models[[method]] <- caret::train(getspikeslabRecipe(), data = getTrainData(), method = method, metric = "RMSE", trControl = getTrControl(), tuneLength = 15)
+        saveToRds(models[[method]], "spikeslab")
+      }, 
+      finally = {
+        removeNotification(id = method)
+        stopMode(clus)
+      })
+    }
+  )
+  
+  output$spikeslabModelSummary0 <- renderText({
+    description("spikeslab")
+  })
+  
+  output$spikeslabMetrics <- renderTable({
+    req(models$spikeslab)
+    models$spikeslab$results[ which.min(models$spikeslab$results[, "RMSE"]), ]
+  })
+  
+  output$spikeslabRecipe <- renderPrint({
+    req(models$spikeslab)
+    models$spikeslab$recipe
+  })  
+  
+  output$spikeslabModelPlots <- renderPlot({
+    req(models$spikeslab)
+    plot(models$spikeslab)
+  })
+  
+  output$spikeslabFinalModelPlots <- renderPlot({
+    req(models$spikeslab)
+    plot(models$spikeslab$finalModel)
+  })
+  
+  output$spikeslabModelSummary2 <- renderPrint({
+    req(models$spikeslab)
+    print(models$spikeslab)
+  })
+  
+  output$spikeslabTimeConsuming <- renderPrint({
+    req(models$spikeslab)
+    et <- time_string(models$spikeslab$times$everything[["elapsed"]])
+    ft <- time_string(models$spikeslab$times$final[["elapsed"]])
+    pt <- time_string(models$spikeslab$times$prediction[3])
+    print(paste("Everything:", et, "Final:", ft, "Prediction:", pt))
+  })   
+  
+  
+  
+  
+  
+  
+############################################################ bayesglm ########################################################
+  getbayesglmRecipe <- reactive({
+    recipe <- steps(recipes::recipe(Y ~ ., data = getTrainData()), input$bayesglmPreprocess)
+  })
+  
+  observeEvent(
+    input$bayesglmGo,
+    {
+      library(arm)
+      method <- "bayesglm"
+      models[[method]] <- NULL
+      showNotification(id = method, paste("Processing", method, "model using resampling"), session = session, duration = NULL)
+      clus <- startMode(input$Parallel)
+      tryCatch({
+        models[[method]] <- caret::train(getbayesglmRecipe(), data = getTrainData(), method = method, metric = "RMSE", trControl = getTrControl(), tuneLength = 15)
+        saveToRds(models[[method]], "bayesglm")
+      }, 
+      finally = {
+        removeNotification(id = method)
+        stopMode(clus)
+      })
+    }
+  )
+  
+  output$bayesglmModelSummary0 <- renderText({
+    description("bayesglm")
+  })
+  
+  output$bayesglmMetrics <- renderTable({
+    req(models$bayesglm)
+    models$bayesglm$results[ which.min(models$bayesglm$results[, "RMSE"]), ]
+  })
+  
+  output$bayesglmRecipe <- renderPrint({
+    req(models$bayesglm)
+    models$bayesglm$recipe
+  })  
+  
+  output$bayesglmModelPlots <- renderPlot({
+    req(models$bayesglm)
+    plot(models$bayesglm)
+  })
+  
+  output$bayesglmFinalModelPlots <- renderPlot({
+    req(models$bayesglm)
+    plot(models$bayesglm$finalModel)
+  })
+  
+  output$bayesglmModelSummary2 <- renderPrint({
+    req(models$bayesglm)
+    print(models$bayesglm)
+  })
+  
+  output$bayesglmTimeConsuming <- renderPrint({
+    req(models$bayesglm)
+    et <- time_string(models$bayesglm$times$everything[["elapsed"]])
+    ft <- time_string(models$bayesglm$times$final[["elapsed"]])
+    pt <- time_string(models$bayesglm$times$prediction[3])
+    print(paste("Everything:", et, "Final:", ft, "Prediction:", pt))
+  })   
+  
+  
+  
+  
+  
+  
+############################################################ rqlasso ########################################################
+  getrqlassoRecipe <- reactive({
+    recipe <- steps(recipes::recipe(Y ~ ., data = getTrainData()), input$rqlassoPreprocess)
+  })
+  
+  observeEvent(
+    input$rqlassoGo,
+    {
+      library(rqPen)
+      method <- "rqlasso"
+      models[[method]] <- NULL
+      showNotification(id = method, paste("Processing", method, "model using resampling"), session = session, duration = NULL)
+      clus <- startMode(input$Parallel)
+      tryCatch({
+        models[[method]] <- caret::train(getrqlassoRecipe(), data = getTrainData(), method = method, metric = "RMSE", trControl = getTrControl(), tuneLength = 15)
+        saveToRds(models[[method]], "rqlasso")
+      }, 
+      finally = {
+        removeNotification(id = method)
+        stopMode(clus)
+      })
+    }
+  )
+  
+  output$rqlassoModelSummary0 <- renderText({
+    description("rqlasso")
+  })
+  
+  output$rqlassoMetrics <- renderTable({
+    req(models$rqlasso)
+    models$rqlasso$results[ which.min(models$rqlasso$results[, "RMSE"]), ]
+  })
+  
+  output$rqlassoRecipe <- renderPrint({
+    req(models$rqlasso)
+    models$rqlasso$recipe
+  })  
+  
+  output$rqlassoModelPlots <- renderPlot({
+    req(models$rqlasso)
+    plot(models$rqlasso)
+  })
+  
+  output$rqlassoFinalModelPlots <- renderPlot({
+    req(models$rqlasso)
+    plot(models$rqlasso$finalModel)
+  })
+  
+  output$rqlassoModelSummary2 <- renderPrint({
+    req(models$rqlasso)
+    print(models$rqlasso)
+  })
+  
+  output$rqlassoTimeConsuming <- renderPrint({
+    req(models$rqlasso)
+    et <- time_string(models$rqlasso$times$everything[["elapsed"]])
+    ft <- time_string(models$rqlasso$times$final[["elapsed"]])
+    pt <- time_string(models$rqlasso$times$prediction[3])
+    print(paste("Everything:", et, "Final:", ft, "Prediction:", pt))
+  })   
+  
+  
+  
+  
+  
+  
+############################################################ blasso ########################################################
+  getblassoRecipe <- reactive({
+    recipe <- steps(recipes::recipe(Y ~ ., data = getTrainData()), input$blassoPreprocess)
+  })
+  
+  observeEvent(
+    input$blassoGo,
+    {
+      library(monomvn)
+      method <- "blasso"
+      models[[method]] <- NULL
+      showNotification(id = method, paste("Processing", method, "model using resampling"), session = session, duration = NULL)
+      clus <- startMode(input$Parallel)
+      tryCatch({
+        models[[method]] <- caret::train(getblassoRecipe(), data = getTrainData(), method = method, metric = "RMSE", trControl = getTrControl(), tuneLength = 15)
+        saveToRds(models[[method]], "blasso")
+      }, 
+      finally = {
+        removeNotification(id = method)
+        stopMode(clus)
+      })
+    }
+  )
+  
+  output$blassoModelSummary0 <- renderText({
+    description("blasso")
+  })
+  
+  output$blassoMetrics <- renderTable({
+    req(models$blasso)
+    models$blasso$results[ which.min(models$blasso$results[, "RMSE"]), ]
+  })
+  
+  output$blassoRecipe <- renderPrint({
+    req(models$blasso)
+    models$blasso$recipe
+  })  
+  
+  output$blassoModelPlots <- renderPlot({
+    req(models$blasso)
+    plot(models$blasso)
+  })
+  
+  output$blassoFinalModelPlots <- renderPlot({
+    req(models$blasso)
+    plot(models$blasso$finalModel)
+  })
+  
+  output$blassoModelSummary2 <- renderPrint({
+    req(models$blasso)
+    print(models$blasso)
+  })
+  
+  output$blassoTimeConsuming <- renderPrint({
+    req(models$blasso)
+    et <- time_string(models$blasso$times$everything[["elapsed"]])
+    ft <- time_string(models$blasso$times$final[["elapsed"]])
+    pt <- time_string(models$blasso$times$prediction[3])
+    print(paste("Everything:", et, "Final:", ft, "Prediction:", pt))
+  })   
+  
+  
+  
+  
+  
+  
+
+############################################################ cubist ########################################################
+  getcubistRecipe <- reactive({
+    recipe <- steps(recipes::recipe(Y ~ ., data = getTrainData()), input$cubistPreprocess)
+  })
+  
+  observeEvent(
+    input$cubistGo,
+    {
+      library(Cubist)
+      method <- "cubist"
+      models[[method]] <- NULL
+      showNotification(id = method, paste("Processing", method, "model using resampling"), session = session, duration = NULL)
+      clus <- startMode(input$Parallel)
+      tryCatch({
+        models[[method]] <- caret::train(getcubistRecipe(), data = getTrainData(), method = method, metric = "RMSE", trControl = getTrControl(), tuneLength = 15)
+        saveToRds(models[[method]], "cubist")
+      }, 
+      finally = {
+        removeNotification(id = method)
+        stopMode(clus)
+      })
+    }
+  )
+  
+  output$cubistModelSummary0 <- renderText({
+    description("cubist")
+  })
+  
+  output$cubistMetrics <- renderTable({
+    req(models$cubist)
+    models$cubist$results[ which.min(models$cubist$results[, "RMSE"]), ]
+  })
+  
+  output$cubistRecipe <- renderPrint({
+    req(models$cubist)
+    models$cubist$recipe
+  })  
+  
+  output$cubistModelPlots <- renderPlot({
+    req(models$cubist)
+    plot(models$cubist)
+  })
+  
+  output$cubistFinalModelPlots <- renderPlot({
+    req(models$cubist)
+    dotplot(models$cubist$finalModel, what='splits')
+  })
+  
+  output$cubistModelSummary2 <- renderPrint({
+    req(models$cubist)
+    print(models$cubist)
+  })
+  
+  output$cubistTimeConsuming <- renderPrint({
+    req(models$cubist)
+    et <- time_string(models$cubist$times$everything[["elapsed"]])
+    ft <- time_string(models$cubist$times$final[["elapsed"]])
+    pt <- time_string(models$cubist$times$prediction[3])
+    print(paste("Everything:", et, "Final:", ft, "Prediction:", pt))
+  })   
+
+############################################################ qrf ########################################################
+  getqrfRecipe <- reactive({
+    recipe <- steps(recipes::recipe(Y ~ ., data = getTrainData()), input$qrfPreprocess)
+  })
+  
+  observeEvent(
+    input$qrfGo,
+    {
+      library(quantregForest)
+      method <- "qrf"
+      models[[method]] <- NULL
+      showNotification(id = method, paste("Processing", method, "model using resampling"), session = session, duration = NULL)
+      clus <- startMode(input$Parallel)
+      tryCatch({
+        models[[method]] <- caret::train(getqrfRecipe(), data = getTrainData(), method = method, metric = "RMSE", trControl = getTrControl(), tuneLength = 15)
+        saveToRds(models[[method]], "qrf")
+      }, 
+      finally = {
+        removeNotification(id = method)
+        stopMode(clus)
+      })
+    }
+  )
+  
+  output$qrfModelSummary0 <- renderText({
+    description("qrf")
+  })
+  
+  output$qrfMetrics <- renderTable({
+    req(models$qrf)
+    models$qrf$results[ which.min(models$qrf$results[, "RMSE"]), ]
+  })
+  
+  output$qrfRecipe <- renderPrint({
+    req(models$qrf)
+    models$qrf$recipe
+  })  
+  
+  output$qrfModelPlots <- renderPlot({
+    req(models$qrf)
+    plot(models$qrf)
+  })
+  
+  output$qrfFinalModelPlots <- renderPlot({
+    req(models$qrf)
+    dotplot(models$qrf$finalModel, what='splits')
+  })
+  
+  output$qrfModelSummary2 <- renderPrint({
+    req(models$qrf)
+    print(models$qrf)
+  })
+  
+  output$qrfTimeConsuming <- renderPrint({
+    req(models$qrf)
+    et <- time_string(models$qrf$times$everything[["elapsed"]])
+    ft <- time_string(models$qrf$times$final[["elapsed"]])
+    pt <- time_string(models$qrf$times$prediction[3])
+    print(paste("Everything:", et, "Final:", ft, "Prediction:", pt))
+  })    
+
+  ######################################################### End of maintenance point ####################################################
   
   
   

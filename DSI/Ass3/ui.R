@@ -18,6 +18,12 @@ shinyUI(fluidPage(
              plotOutput(outputId = "Corr"),
              DT::dataTableOutput(outputId = "Table")
     ),
+    # tabPanel("Data cont",
+    #          plotOutput(outputId = "PredictorPlot1"),
+    #          plotOutput(outputId = "PredictorPlot2"),
+    #          plotOutput(outputId = "PredictorPlot3"),
+    #          plotOutput(outputId = "PredictorPlot4")
+    #),
     tabPanel("Split",
              sliderInput(inputId = "Split", label = "Train proportion", min = 0, max = 1, value = 0.8),
              verbatimTextOutput(outputId = "SplitSummary")
@@ -119,6 +125,59 @@ shinyUI(fluidPage(
                ),
                
 ######################################################### maintenance point ####################################################
+#### brnn ####
+tabPanel("brnn Model",
+         verbatimTextOutput(outputId = "brnnModelSummary0"),
+         fluidRow(
+           column(width = 4, 
+                  selectizeInput(inputId = "brnnPreprocess", label = "Pre-processing", choices = ppchoices,  multiple = TRUE, selected = c("knnimpute","dummy")),
+                  bsTooltip(id = "brnnPreprocess", 
+                            title = "The order of preprocessing steps is important. The default steps should be set to your best selection for this method.")
+           ),
+           column(width = 1, 
+                  actionButton(inputId = "brnnGo", label = "Train", icon = icon("play")),
+                  bsTooltip(id = "brnnGo", title = "This will train or retrain your model")
+           ),
+           column(width = 4, 
+                  verbatimTextOutput(outputId = "brnnTimeConsuming")
+           )
+         ),
+         hr(),
+         h3("Resampled performance:"),
+         tableOutput(outputId = "brnnMetrics"),
+         hr(),
+         plotOutput(outputId = "brnnModelPlots"),
+         # plotOutput(outputId = "brnnFinalModelPlots"),
+         verbatimTextOutput(outputId = "brnnRecipe"),
+         verbatimTextOutput(outputId = "brnnModelSummary2")
+),
+
+#### qrnn ####
+tabPanel("qrnn Model",
+         verbatimTextOutput(outputId = "qrnnModelSummary0"),
+         fluidRow(
+           column(width = 4, 
+                  selectizeInput(inputId = "qrnnPreprocess", label = "Pre-processing", choices = ppchoices,  multiple = TRUE, selected = c("bagimpute","center","scale","dummy")),
+                  bsTooltip(id = "qrnnPreprocess", 
+                            title = "The order of preprocessing steps is important. The default steps should be set to your best selection for this method.")
+           ),
+           column(width = 1, 
+                  actionButton(inputId = "qrnnGo", label = "Train", icon = icon("play")),
+                  bsTooltip(id = "qrnnGo", title = "This will train or retrain your model")
+           ),
+           column(width = 4, 
+                  verbatimTextOutput(outputId = "qrnnTimeConsuming")
+           )
+         ),
+         hr(),
+         h3("Resampled performance:"),
+         tableOutput(outputId = "qrnnMetrics"),
+         hr(),
+         plotOutput(outputId = "qrnnModelPlots"),
+         # plotOutput(outputId = "qrnnFinalModelPlots"),
+         verbatimTextOutput(outputId = "qrnnRecipe"),
+         verbatimTextOutput(outputId = "qrnnModelSummary2")
+),
 #### rf ####
 tabPanel("Rf Model",
           verbatimTextOutput(outputId = "RfModelSummary0"),
@@ -193,7 +252,7 @@ tabPanel("gbm Model",
          tableOutput(outputId = "gbmMetrics"),
          hr(),
          plotOutput(outputId = "gbmModelPlots"),
-         plotOutput(outputId = "gbmFinalModelPlots"),
+         # plotOutput(outputId = "gbmFinalModelPlots"),
          verbatimTextOutput(outputId = "gbmRecipe"),
          verbatimTextOutput(outputId = "gbmModelSummary2")
 ),
@@ -219,7 +278,7 @@ tabPanel("lasso Model",
          tableOutput(outputId = "lassoMetrics"),
          hr(),
          plotOutput(outputId = "lassoModelPlots"),
-         plotOutput(outputId = "lassoFinalModelPlots"),
+         # plotOutput(outputId = "lassoFinalModelPlots"),
          verbatimTextOutput(outputId = "lassoRecipe"),
          verbatimTextOutput(outputId = "lassoModelSummary2")
 ),
@@ -245,7 +304,7 @@ tabPanel("ridge Model",
          tableOutput(outputId = "ridgeMetrics"),
          hr(),
          plotOutput(outputId = "ridgeModelPlots"),
-         plotOutput(outputId = "ridgeFinalModelPlots"),
+         # plotOutput(outputId = "ridgeFinalModelPlots"),
          verbatimTextOutput(outputId = "ridgeRecipe"),
          verbatimTextOutput(outputId = "ridgeModelSummary2")
 ),
@@ -303,12 +362,40 @@ tabPanel("glmboost Model",
 ),
 
 
+#### gaussprLinear ####
+tabPanel("gaussprLinear Model",
+         verbatimTextOutput(outputId = "gaussprLinearModelSummary0"),
+         fluidRow(
+           column(width = 4, 
+                  selectizeInput(inputId = "gaussprLinearPreprocess", label = "Pre-processing", choices = ppchoices,  multiple = TRUE, selected = c("knnimpute","center","scale","dummy")),
+                  bsTooltip(id = "gaussprLinearPreprocess", 
+                            title = "The order of preprocessing steps is important. The default steps should be set to your best selection for this method.")
+           ),
+           column(width = 1, 
+                  actionButton(inputId = "gaussprLinearGo", label = "Train", icon = icon("play")),
+                  bsTooltip(id = "gaussprLinearGo", title = "This will train or retrain your model")
+           ),
+           column(width = 4, 
+                  verbatimTextOutput(outputId = "gaussprLinearTimeConsuming")
+           )
+         ),
+         hr(),
+         h3("Resampled performance:"),
+         tableOutput(outputId = "gaussprLinearMetrics"),
+         hr(),
+         # plotOutput(outputId = "gaussprLinearModelPlots"),
+         # plotOutput(outputId = "gaussprLinearFinalModelPlots"),
+         verbatimTextOutput(outputId = "gaussprLinearRecipe"),
+         verbatimTextOutput(outputId = "gaussprLinearModelSummary2")
+),
+
+
 #### svmLinear ####
 tabPanel("svmLinear Model",
          verbatimTextOutput(outputId = "svmLinearModelSummary0"),
          fluidRow(
            column(width = 4, 
-                  selectizeInput(inputId = "svmLinearPreprocess", label = "Pre-processing", choices = ppchoices,  multiple = TRUE, selected = c("knnimpute","dummy")),
+                  selectizeInput(inputId = "svmLinearPreprocess", label = "Pre-processing", choices = ppchoices,  multiple = TRUE, selected = c("bagimpute","center","scale","dummy")),
                   bsTooltip(id = "svmLinearPreprocess", 
                             title = "The order of preprocessing steps is important. The default steps should be set to your best selection for this method.")
            ),
@@ -328,11 +415,357 @@ tabPanel("svmLinear Model",
          # plotOutput(outputId = "svmLinearFinalModelPlots"),
          verbatimTextOutput(outputId = "svmLinearRecipe"),
          verbatimTextOutput(outputId = "svmLinearModelSummary2")
+),
+
+#### mlpML ####
+tabPanel("mlpML Model",
+         verbatimTextOutput(outputId = "mlpMLModelSummary0"),
+         fluidRow(
+           column(width = 4, 
+                  selectizeInput(inputId = "mlpMLPreprocess", label = "Pre-processing", choices = ppchoices,  multiple = TRUE, selected = c("knnimpute","dummy")),
+                  bsTooltip(id = "mlpMLPreprocess", 
+                            title = "The order of preprocessing steps is important. The default steps should be set to your best selection for this method.")
+           ),
+           column(width = 1, 
+                  actionButton(inputId = "mlpMLGo", label = "Train", icon = icon("play")),
+                  bsTooltip(id = "mlpMLGo", title = "This will train or retrain your model")
+           ),
+           column(width = 4, 
+                  verbatimTextOutput(outputId = "mlpMLTimeConsuming")
+           )
+         ),
+         hr(),
+         h3("Resampled performance:"),
+         tableOutput(outputId = "mlpMLMetrics"),
+         hr(),
+         plotOutput(outputId = "mlpMLModelPlots"),
+         # plotOutput(outputId = "mlpMLFinalModelPlots"),
+         verbatimTextOutput(outputId = "mlpMLRecipe"),
+         verbatimTextOutput(outputId = "mlpMLModelSummary2")
+),
+#### xyf ####
+tabPanel("xyf Model",
+         verbatimTextOutput(outputId = "xyfModelSummary0"),
+         fluidRow(
+           column(width = 4, 
+                  selectizeInput(inputId = "xyfPreprocess", label = "Pre-processing", choices = ppchoices,  multiple = TRUE, selected = c("knnimpute","dummy")),
+                  bsTooltip(id = "xyfPreprocess", 
+                            title = "The order of preprocessing steps is important. The default steps should be set to your best selection for this method.")
+           ),
+           column(width = 1, 
+                  actionButton(inputId = "xyfGo", label = "Train", icon = icon("play")),
+                  bsTooltip(id = "xyfGo", title = "This will train or retrain your model")
+           ),
+           column(width = 4, 
+                  verbatimTextOutput(outputId = "xyfTimeConsuming")
+           )
+         ),
+         hr(),
+         h3("Resampled performance:"),
+         tableOutput(outputId = "xyfMetrics"),
+         hr(),
+         plotOutput(outputId = "xyfModelPlots"),
+         # plotOutput(outputId = "xyfFinalModelPlots"),
+         verbatimTextOutput(outputId = "xyfRecipe"),
+         verbatimTextOutput(outputId = "xyfModelSummary2")
+),
+
+#### kknn ####
+tabPanel("kknn Model",
+         verbatimTextOutput(outputId = "kknnModelSummary0"),
+         fluidRow(
+           column(width = 4, 
+                  selectizeInput(inputId = "kknnPreprocess", label = "Pre-processing", choices = ppchoices,  multiple = TRUE, selected = c("knnimpute","dummy")),
+                  bsTooltip(id = "kknnPreprocess", 
+                            title = "The order of preprocessing steps is important. The default steps should be set to your best selection for this method.")
+           ),
+           column(width = 1, 
+                  actionButton(inputId = "kknnGo", label = "Train", icon = icon("play")),
+                  bsTooltip(id = "kknnGo", title = "This will train or retrain your model")
+           ),
+           column(width = 4, 
+                  verbatimTextOutput(outputId = "kknnTimeConsuming")
+           )
+         ),
+         hr(),
+         h3("Resampled performance:"),
+         tableOutput(outputId = "kknnMetrics"),
+         hr(),
+         plotOutput(outputId = "kknnModelPlots"),
+         # plotOutput(outputId = "kknnFinalModelPlots"),
+         verbatimTextOutput(outputId = "kknnRecipe"),
+         verbatimTextOutput(outputId = "kknnModelSummary2")
+),
+
+
+
+
+#### rvmRadial ####
+tabPanel("rvmRadial Model",
+         verbatimTextOutput(outputId = "rvmRadialModelSummary0"),
+         fluidRow(
+           column(width = 4, 
+                  selectizeInput(inputId = "rvmRadialPreprocess", label = "Pre-processing", choices = ppchoices,  multiple = TRUE, selected = c("knnimpute","dummy")),
+                  bsTooltip(id = "rvmRadialPreprocess", 
+                            title = "The order of preprocessing steps is important. The default steps should be set to your best selection for this method.")
+           ),
+           column(width = 1, 
+                  actionButton(inputId = "rvmRadialGo", label = "Train", icon = icon("play")),
+                  bsTooltip(id = "rvmRadialGo", title = "This will train or retrain your model")
+           ),
+           column(width = 4, 
+                  verbatimTextOutput(outputId = "rvmRadialTimeConsuming")
+           )
+         ),
+         hr(),
+         h3("Resampled performance:"),
+         tableOutput(outputId = "rvmRadialMetrics"),
+         hr(),
+         # plotOutput(outputId = "rvmRadialModelPlots"),
+         # plotOutput(outputId = "rvmRadialFinalModelPlots"),
+         verbatimTextOutput(outputId = "rvmRadialRecipe"),
+         verbatimTextOutput(outputId = "rvmRadialModelSummary2")
+),
+
+
+#### glmStepAIC ####
+tabPanel("glmStepAIC Model",
+         verbatimTextOutput(outputId = "glmStepAICModelSummary0"),
+         fluidRow(
+           column(width = 4, 
+                  selectizeInput(inputId = "glmStepAICPreprocess", label = "Pre-processing", choices = ppchoices,  multiple = TRUE, selected = c("knnimpute","dummy")),
+                  bsTooltip(id = "glmStepAICPreprocess", 
+                            title = "The order of preprocessing steps is important. The default steps should be set to your best selection for this method.")
+           ),
+           column(width = 1, 
+                  actionButton(inputId = "glmStepAICGo", label = "Train", icon = icon("play")),
+                  bsTooltip(id = "glmStepAICGo", title = "This will train or retrain your model")
+           ),
+           column(width = 4, 
+                  verbatimTextOutput(outputId = "glmStepAICTimeConsuming")
+           )
+         ),
+         hr(),
+         h3("Resampled performance:"),
+         tableOutput(outputId = "glmStepAICMetrics"),
+         hr(),
+         # plotOutput(outputId = "glmStepAICModelPlots"),
+         # plotOutput(outputId = "glmStepAICFinalModelPlots"),
+         verbatimTextOutput(outputId = "glmStepAICRecipe"),
+         verbatimTextOutput(outputId = "glmStepAICModelSummary2")
+),
+
+#### pcaNNet ####
+tabPanel("pcaNNet Model",
+         verbatimTextOutput(outputId = "pcaNNetModelSummary0"),
+         fluidRow(
+           column(width = 4, 
+                  selectizeInput(inputId = "pcaNNetPreprocess", label = "Pre-processing", choices = ppchoices,  multiple = TRUE, selected = c("knnimpute","dummy")),
+                  bsTooltip(id = "pcaNNetPreprocess", 
+                            title = "The order of preprocessing steps is important. The default steps should be set to your best selection for this method.")
+           ),
+           column(width = 1, 
+                  actionButton(inputId = "pcaNNetGo", label = "Train", icon = icon("play")),
+                  bsTooltip(id = "pcaNNetGo", title = "This will train or retrain your model")
+           ),
+           column(width = 4, 
+                  verbatimTextOutput(outputId = "pcaNNetTimeConsuming")
+           )
+         ),
+         hr(),
+         h3("Resampled performance:"),
+         tableOutput(outputId = "pcaNNetMetrics"),
+         hr(),
+         # plotOutput(outputId = "pcaNNetModelPlots"),
+         # plotOutput(outputId = "pcaNNetFinalModelPlots"),
+         verbatimTextOutput(outputId = "pcaNNetRecipe"),
+         verbatimTextOutput(outputId = "pcaNNetModelSummary2")
+),
+
+#### GFS.LT.RS ####
+tabPanel("GFS.LT.RS Model",
+         verbatimTextOutput(outputId = "GFS.LT.RSModelSummary0"),
+         fluidRow(
+           column(width = 4, 
+                  selectizeInput(inputId = "GFS.LT.RSPreprocess", label = "Pre-processing", choices = ppchoices,  multiple = TRUE, selected = c("knnimpute","dummy")),
+                  bsTooltip(id = "GFS.LT.RSPreprocess", 
+                            title = "The order of preprocessing steps is important. The default steps should be set to your best selection for this method.")
+           ),
+           column(width = 1, 
+                  actionButton(inputId = "GFS.LT.RSGo", label = "Train", icon = icon("play")),
+                  bsTooltip(id = "GFS.LT.RSGo", title = "This will train or retrain your model")
+           ),
+           column(width = 4, 
+                  verbatimTextOutput(outputId = "GFS.LT.RSTimeConsuming")
+           )
+         ),
+         hr(),
+         h3("Resampled performance:"),
+         tableOutput(outputId = "GFS.LT.RSMetrics"),
+         hr(),
+         # plotOutput(outputId = "GFS.LT.RSModelPlots"),
+         # plotOutput(outputId = "GFS.LT.RSFinalModelPlots"),
+         verbatimTextOutput(outputId = "GFS.LT.RSRecipe"),
+         verbatimTextOutput(outputId = "GFS.LT.RSModelSummary2")
+),
+
+#### spikeslab ####
+tabPanel("spikeslab Model",
+         verbatimTextOutput(outputId = "spikeslabModelSummary0"),
+         fluidRow(
+           column(width = 4, 
+                  selectizeInput(inputId = "spikeslabPreprocess", label = "Pre-processing", choices = ppchoices,  multiple = TRUE, selected = c("knnimpute","center","scale","dummy")),
+                  bsTooltip(id = "spikeslabPreprocess", 
+                            title = "The order of preprocessing steps is important. The default steps should be set to your best selection for this method.")
+           ),
+           column(width = 1, 
+                  actionButton(inputId = "spikeslabGo", label = "Train", icon = icon("play")),
+                  bsTooltip(id = "spikeslabGo", title = "This will train or retrain your model")
+           ),
+           column(width = 4, 
+                  verbatimTextOutput(outputId = "spikeslabTimeConsuming")
+           )
+         ),
+         hr(),
+         h3("Resampled performance:"),
+         tableOutput(outputId = "spikeslabMetrics"),
+         hr(),
+         plotOutput(outputId = "spikeslabModelPlots"),
+         # plotOutput(outputId = "spikeslabFinalModelPlots"),
+         verbatimTextOutput(outputId = "spikeslabRecipe"),
+         verbatimTextOutput(outputId = "spikeslabModelSummary2")
+),
+#### bayesglm ####
+tabPanel("bayesglm Model",
+         verbatimTextOutput(outputId = "bayesglmModelSummary0"),
+         fluidRow(
+           column(width = 4, 
+                  selectizeInput(inputId = "bayesglmPreprocess", label = "Pre-processing", choices = ppchoices,  multiple = TRUE, selected = c("knnimpute","center","scale","dummy")),
+                  bsTooltip(id = "bayesglmPreprocess", 
+                            title = "The order of preprocessing steps is important. The default steps should be set to your best selection for this method.")
+           ),
+           column(width = 1, 
+                  actionButton(inputId = "bayesglmGo", label = "Train", icon = icon("play")),
+                  bsTooltip(id = "bayesglmGo", title = "This will train or retrain your model")
+           ),
+           column(width = 4, 
+                  verbatimTextOutput(outputId = "bayesglmTimeConsuming")
+           )
+         ),
+         hr(),
+         h3("Resampled performance:"),
+         tableOutput(outputId = "bayesglmMetrics"),
+         hr(),
+         plotOutput(outputId = "bayesglmModelPlots"),
+         # plotOutput(outputId = "bayesglmFinalModelPlots"),
+         verbatimTextOutput(outputId = "bayesglmRecipe"),
+         verbatimTextOutput(outputId = "bayesglmModelSummary2")
+),
+#### rqlasso ####
+tabPanel("rqlasso Model",
+         verbatimTextOutput(outputId = "rqlassoModelSummary0"),
+         fluidRow(
+           column(width = 4, 
+                  selectizeInput(inputId = "rqlassoPreprocess", label = "Pre-processing", choices = ppchoices,  multiple = TRUE, selected = c("knnimpute","center","scale","dummy")),
+                  bsTooltip(id = "rqlassoPreprocess", 
+                            title = "The order of preprocessing steps is important. The default steps should be set to your best selection for this method.")
+           ),
+           column(width = 1, 
+                  actionButton(inputId = "rqlassoGo", label = "Train", icon = icon("play")),
+                  bsTooltip(id = "rqlassoGo", title = "This will train or retrain your model")
+           ),
+           column(width = 4, 
+                  verbatimTextOutput(outputId = "rqlassoTimeConsuming")
+           )
+         ),
+         hr(),
+         h3("Resampled performance:"),
+         tableOutput(outputId = "rqlassoMetrics"),
+         hr(),
+         plotOutput(outputId = "rqlassoModelPlots"),
+         # plotOutput(outputId = "rqlassoFinalModelPlots"),
+         verbatimTextOutput(outputId = "rqlassoRecipe"),
+         verbatimTextOutput(outputId = "rqlassoModelSummary2")
+),
+#### blasso ####
+tabPanel("blasso Model",
+         verbatimTextOutput(outputId = "blassoModelSummary0"),
+         fluidRow(
+           column(width = 4, 
+                  selectizeInput(inputId = "blassoPreprocess", label = "Pre-processing", choices = ppchoices,  multiple = TRUE, selected = c("knnimpute","center","scale","dummy")),
+                  bsTooltip(id = "blassoPreprocess", 
+                            title = "The order of preprocessing steps is important. The default steps should be set to your best selection for this method.")
+           ),
+           column(width = 1, 
+                  actionButton(inputId = "blassoGo", label = "Train", icon = icon("play")),
+                  bsTooltip(id = "blassoGo", title = "This will train or retrain your model")
+           ),
+           column(width = 4, 
+                  verbatimTextOutput(outputId = "blassoTimeConsuming")
+           )
+         ),
+         hr(),
+         h3("Resampled performance:"),
+         tableOutput(outputId = "blassoMetrics"),
+         hr(),
+         plotOutput(outputId = "blassoModelPlots"),
+         # plotOutput(outputId = "blassoFinalModelPlots"),
+         verbatimTextOutput(outputId = "blassoRecipe"),
+         verbatimTextOutput(outputId = "blassoModelSummary2")
+),
+#### cubist ####
+tabPanel("cubist Model",
+         verbatimTextOutput(outputId = "cubistModelSummary0"),
+         fluidRow(
+           column(width = 4, 
+                  selectizeInput(inputId = "cubistPreprocess", label = "Pre-processing", choices = ppchoices,  multiple = TRUE, selected = c("bagimpute","dummy")),
+                  bsTooltip(id = "cubistPreprocess", 
+                            title = "The order of preprocessing steps is important. The default steps should be set to your best selection for this method.")
+           ),
+           column(width = 1, 
+                  actionButton(inputId = "cubistGo", label = "Train", icon = icon("play")),
+                  bsTooltip(id = "cubistGo", title = "This will train or retrain your model")
+           ),
+           column(width = 4, 
+                  verbatimTextOutput(outputId = "cubistTimeConsuming")
+           )
+         ),
+         hr(),
+         h3("Resampled performance:"),
+         tableOutput(outputId = "cubistMetrics"),
+         hr(),
+         plotOutput(outputId = "cubistModelPlots"),
+         plotOutput(outputId = "cubistFinalModelPlots"),
+         verbatimTextOutput(outputId = "cubistRecipe"),
+         verbatimTextOutput(outputId = "cubistModelSummary2")
+),
+
+#### qrf ####
+tabPanel("qrf Model",
+         verbatimTextOutput(outputId = "qrfModelSummary0"),
+         fluidRow(
+           column(width = 4, 
+                  selectizeInput(inputId = "qrfPreprocess", label = "Pre-processing", choices = ppchoices,  multiple = TRUE, selected = c("knnimpute","dummy")),
+                  bsTooltip(id = "qrfPreprocess", 
+                            title = "The order of preprocessing steps is important. The default steps should be set to your best selection for this method.")
+           ),
+           column(width = 1, 
+                  actionButton(inputId = "qrfGo", label = "Train", icon = icon("play")),
+                  bsTooltip(id = "qrfGo", title = "This will train or retrain your model")
+           ),
+           column(width = 4, 
+                  verbatimTextOutput(outputId = "qrfTimeConsuming")
+           )
+         ),
+         hr(),
+         h3("Resampled performance:"),
+         tableOutput(outputId = "qrfMetrics"),
+         hr(),
+         plotOutput(outputId = "qrfModelPlots"),
+         # plotOutput(outputId = "qrfFinalModelPlots"),
+         verbatimTextOutput(outputId = "qrfRecipe"),
+         verbatimTextOutput(outputId = "qrfModelSummary2")
 )
-
-
-
-
 
 ################################################################################################################################
              ) # end of tabsetPanel

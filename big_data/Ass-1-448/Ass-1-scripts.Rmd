@@ -1,0 +1,47 @@
+---
+title: "STAT448-Assignment1"
+output:
+  pdf_document: default
+  html_notebook: default
+  html_document:
+    df_print: paged
+date: "3/13/2020"
+---
+
+**Course:** STAT448-20S1
+
+**Name:** Zhen Huang  **ID:** 74093323
+
+**Name:** Neha Thakkar  **ID:** 51192498
+
+---
+
+##### Q1
+
+**(a) Compute ordinary least squares estimates of the coefficients \(\beta_0\) and \(\beta_1\) using linear algebra calculations by hand and with explanatory comments.**
+
+Let response variable \(y=\begin{bmatrix}5\\9\\13\end{bmatrix}\), explanatory variables \(X=\begin{bmatrix}1&3\\1&4\\1&5\end{bmatrix}\), parameter \(B=\begin{bmatrix}\beta_0\\\beta_1\end{bmatrix}\)
+
+Because OLS tries to find B to minimise the SSE(sum of the square of the errors).
+
+We have \(SSE = \epsilon^T\epsilon=(y-XB)^T(y-XB)\), which is a quadratic function of vector B. 
+
+SSE would be minimised, when the partial derivative of SSE with respect to B is equal to zero.
+
+Now we can use OLS solution to estimate \(\hat{B}=(X^TX)^{-1}X^Ty\) 
+
+Then we calculate \(X^TX=\begin{bmatrix}1&1&1\\3&4&5\end{bmatrix}\begin{bmatrix}1&3\\1&4\\1&5\end{bmatrix}=\begin{bmatrix}1+1+1&3+4+5\\3+4+5&9+16+25\end{bmatrix}=\begin{bmatrix}3&12\\12&50\end{bmatrix}\)
+
+\((X^TX)^{-1}=\frac{1}{50*3-12*12}\begin{bmatrix}50&-12\\-12&3\end{bmatrix}=\frac{1}{6}\begin{bmatrix}50&-12\\-12&3\end{bmatrix}\)
+
+\(X^Ty=\begin{bmatrix}1&1&1\\3&4&5\end{bmatrix}\begin{bmatrix}5\\9\\13\end{bmatrix}=\begin{bmatrix}27\\116\end{bmatrix}\)
+
+Then we have \(\hat{B}=\frac{1}{6}\begin{bmatrix}50&-12\\-12&3\end{bmatrix}\begin{bmatrix}27\\116\end{bmatrix}=\frac{1}{6}\begin{bmatrix}50*27-12*116&\\-12*27+3*116\end{bmatrix}=\begin{bmatrix}-7\\4\end{bmatrix}\) 
+
+\(\hat{B}=\begin{bmatrix}-7\\4\end{bmatrix}\), so intercept \(\beta_0=-7\) and slope \(\beta_1=4\)
+
+**(b) Calulate by hand the estimates of the residuals \(\hat{\epsilon}\).**
+
+We have \(\hat{\epsilon}=y-\hat{y}=y-X\hat{B}=\begin{bmatrix}5\\9\\13\end{bmatrix}-\begin{bmatrix}1&3\\1&4\\1&5\end{bmatrix}\begin{bmatrix}-7\\4\end{bmatrix}=\begin{bmatrix}5\\9\\13\end{bmatrix}-\begin{bmatrix}-7+12\\-7+16\\-7+20\end{bmatrix}=\begin{bmatrix}0\\0\\0\end{bmatrix}\)
+
+So, \(\hat{\epsilon}=\begin{bmatrix}0\\0\\0\end{bmatrix}\)

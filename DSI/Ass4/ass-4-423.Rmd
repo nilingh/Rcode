@@ -3,6 +3,8 @@ title: "Assignment 4 DATA423-20S1"
 author: "Zhen Huang"
 date: "5/22/2020"
 output:
+  html_document:
+    df_print: paged
   html_notebook: default
   pdf_document: default
 ---
@@ -91,10 +93,6 @@ The first release of `mlr` is in 2013, while the rewritten `mlr3` has the ambiti
 
 ## Question 2 - Report assessment (Marks: 1/3)
 
-### The data
-
-The dataset of the project had 80773 observations and 21 raw variables before the pre-processing. There are five data types of these variables. Two new numeric variables were added by using feature engineering, and one of them was assigned to be the outcome variable later.
-
 ### Procedure followed
 
 #### Missing and imputation
@@ -105,13 +103,13 @@ The dataset of the project had 80773 observations and 21 raw variables before th
 
 3. The method of imputation was not presented in the report. The possibility of omitting the missing data was not discussed in the report, whether omitting would be better than imputation?
 
-4. Whether the observations were removed automatically or manually?
-
 #### Outliers
 
-5. The method and criteria detecting outliers were not discussed in the report. Whether the outliers had a pattern in single variable or multivariable?
+4. The criteria detecting outliers were not discussed in the report. Was it 1.5 IQR?
 
-6. Removing the potential outlier without given any explanations. Outliers deletion can only occur in the case that outliers will not occur in the future unseen data.
+5. What about the other predictors? Whether there was a pattern of observations in multivariable?
+
+6. Outliers deletion can only occur in the case that outliers will not occur in the future unseen data. Whether the observations were removed automatically or manually?
 
 #### Feature engineering
 
@@ -119,19 +117,19 @@ The dataset of the project had 80773 observations and 21 raw variables before th
 
 8. "Net_productivity" is a combination of three variables whose relationship to each other should also be examed. Although related variables removed from predictors later, the "Sales", "Returned_sales" might relate to "Sales_value" and "Returned_sales_value". High "Sales" or low "Returned_sales" would be the effect of "Net_productivity". Thus, the potential data leakage might exist in predicting the model. 
 
+9. Feature engineering includes feature extraction and feature selection. What about the correlation of predictors? If there is a relationship between numeric predictors, PCA can be used to extract new feature variables. If there is a relationship between outcome and predictor, PLS can be used.
+
 #### Role assignment
 
-9. More investigation could be done when assigning the roles of variables. As the description of variables, "Branch" is a globally unique branch name, thus, "Branch"+"Employee ID" could be a unique observation identifier. Then "Country" might be kept as a predictor in this study because there was no other variable related to certain Nationalities that was part of the confirmation in this study.
+10. More investigation could be done when assigning the roles of variables. As the description of variables, "Branch" is a globally unique branch name, thus, "Branch"+"Employee ID" could be a unique observation identifier. Then "Country" might be kept as a predictor in this study because there was no other variable related to certain Nationalities that was part of the confirmation in this study.
 
 (There may have a typo in the role assignment at "Company" which does not exist in the dataset.)
 
 #### Feature Selection
 
-10. The "Weight" and "Height" were kept in the predictors, while they consisted the interaction variable "BodyMassIndex". There was no discussion for the selection in the study. Whether "BodyMassIndex" is essential, and whether the interpretability changed, if "Weight" and "Height" were removed.
+11. The "Weight" and "Height" were kept in the predictors, while they consisted the interaction variable "BodyMassIndex". There was no discussion for the selection in the study. Whether "BodyMassIndex" is essential, and whether the interpretability changed, if "Weight" and "Height" were removed.
 
-11. "Shift_length" was kept in the predictor, however, it was one of the variable consisted of the outcome variable. The outcome consisted of one predictor would lead to data leakage as mentioned above.
-
-12. There were 17 predictors left. The number of predictors could lead to the curse of dimension to one of the candidate method, KNN. If there is a relationship between the other numeric predictors, PCA can be used to reduce the number of variables. If there is a relationship between outcome and predictor, PLS can be used either.
+12. "Shift_length" was kept in the predictor, however, it was one of the variable consisted of the outcome variable. The outcome consisted of one predictor would lead to data leakage as mentioned above.
 
 #### Standardising
 
@@ -141,19 +139,21 @@ The dataset of the project had 80773 observations and 21 raw variables before th
 
 14. `model.matrix` converted nominal variables into binary dummy-variables for the dataset. One more intercept column added also was added into the dataset which was suitable for a linear regression model, however, neither intercept column nor dummy-variables are necessary for a random forest model. There was no explanation whether this transformation was used in training the random forest model.
 
+15. "Education level" is an ordinal predictor, which should not be encoding by binary dummy-variables.
+
 #### Resampling
 
-15. Consider there were 80773 rows in the dataset and 17 variables, a train-validation-test split could be a better alternative than simple random split into training/test.
+16. A train-validation-test split could be a better alternative than simple random split into training/test due to potentially reduce dependency of observations.
 
-15. The potential risk of near-zero variance was not examed in the study, so a one-time train/test split was running the risk of NZV. 
+17. The potential risk of near-zero variance was not examed in the study, so a one-time train/test split was running the risk of NZV. 
 
-16. A supervised stratified split would be a better alternative, if a categorical variable proved to be an appropriate group data role.
+18. A supervised stratified split would be a better alternative, if a categorical variable proved to be an appropriate group data role.
 
 #### Modelling candidates
 
-17. There is no explanation about why choosing these as candidate methods. For example, a better practice can be reporting a list of available methods for the problem and shows how to do the filtering.
+19. There is no explanation about why choosing these as candidate methods. For example, a better practice can be reporting a list of available methods for the problem and shows how to do the filtering.
 
-18. Hyperparameters chosen for the methods; however, there was one set of hyperparameter in GLMnet and Neural network methods, neither evidence nor the process were shown in the report of how these hyperparameters were chosen. For KNN and Random Forest, two different sets were shown without evidence in proving which one was better.
+20. Hyperparameters chosen for the methods; however, there was one set of hyperparameter in GLMnet and Neural network methods, neither evidence nor the process were shown in the report of how these hyperparameters were chosen. For KNN and Random Forest, two different sets were shown without evidence in proving which one was better.
 
 19. Neither the results nor the process of training was reported, if tuning grid was used, was there a problem of the hyperparameter at the edge of the grid?
 
@@ -169,33 +169,140 @@ The dataset of the project had 80773 observations and 21 raw variables before th
 
 24. The statistics of the outcome can be compared with the RMSE to show whether the model predicted sensible values.
 
-25. No guarantee of the model always performs the best application. For example, there was no evidence that the model would be tolerant of the novelty of categorical data or missing data in the future unseen data.
+25. No guarantee of the model always performs the best application. For example, there was no evidence that the model would be tolerant of the novelty of categorical data or missing data in the future unseen data. Broadly, there are two ways a model can not always performs the best  (i.e. model decay), previously unseen variety of predictor data and new categories; the interpretation of the outcome changes with time while the general distribution of the predictor data doesnot.^[Lecture note of 'Model Lifecycle']
 
-26. The economic statuses vary from different country; thus, it was not a fair comparison in the whole dataset without stratified or grouped employees. Gender and religion also related to a certain group of employees which should be considered in the study, such as stratified resampling or fitting models for each group.
+26. There was a suggestion to deploy the predictive model, however no evidence was shown that the model would tolerant outliers, novelities and missing value in future unseen data.
+
+27. Without a monitoring plan, it is hard to guarentee the model always performs the best application.
+
+### Other problems in the report
+
+28. Monitoring employees without their awareness and extracting personel files to the dataset were ethic problems in this study.
+
+29. The economic statuses vary from different country; thus, it was not a fair comparison in the whole dataset without stratified or grouped employees. 
+
+30. Gender and religion also related to a certain group of employees which should be considered in the study, such as stratified resampling or fitting models for each group.
+
 
 ---
 
+
 ## Question 3 - Quality Control (Marks: 1/3)
-The file monitor.csv contains comma separated data. The columns are
 
-Timestamp              - the timestamp of a model prediction being run
-ProcessMemory      - the allocated memory (MB) of the relevant server process
-Prediction                - the value predicted by the model
-PredictionTimeMS   - the duration of the prediction task in milliseconds
-Using the supplied CSV data, generate control charts and answer the following questions:
+#### Load data
 
-a) Is the memory usage of the server in control?
+```{r message=FALSE, warning=FALSE}
+library(qicharts2)
+library(tidyverse)
+data <- read_csv("/Users/neil/Workspace/Repositories/Rcode/DSI/Ass4/monitor.csv") 
+```
+Investing data structure and summary. The columns are loaded: 
 
-b) Is the prediction time of the model in control?
+|Column|Type|Description|
+|-|-|---|
+Timestamp|datetime|the timestamp of a model prediction being run|
+ProcessMemory|double|the allocated memory (MB) of the relevant server process|
+Prediction|double|the value predicted by the model|
+PredictionTimeMS|double|the duration of the prediction task in milliseconds|
+```{r}
+str(data) # data structure
+summary(data) # distribution
+data %>% is.na %>% apply(2, sum) # simple missing check
+```
 
-c) Is the stream of predictions in control?
+Visualisation of variable distributions and potential outliers.
+```{r}
+par(mfrow=c(1,3))
+data$ProcessMemory %>% boxplot(main = "ProcessMemory")
+data$Prediction %>% boxplot(main = "Prediction")
+data$PredictionTimeMS %>% boxplot(main = "PredictionTimeMS")
+```
 
-The relevant control charts would be “xbar” and “s”. You should aggregate the data per day. Assume the first 20 days of data can be used to establish the control limits for the remainder of the data.
+Creating a new column for grouping per day.
 
-Remember to report upon runs.signal and sigma.signal from each chart summary.
+```{r message=FALSE, warning=FALSE}
+attach(data)
+agg_data <- data %>%
+  mutate(PredictDate=(as.Date(Timestamp)))
 
-Have a read of https://cran.r-project.org/web/packages/qicharts/vignettes/controlcharts.html
-Present your charts and results as an R-Notebook document.  In RStudio use the menu choices: File / New File / R Notebook.
+agg_data %>% distinct(PredictDate) %>% arrange(PredictDate) %>% head(20) %>% top_n(1)
+```
+
+Getting a intuitive about the variables.
+
+```{r}
+par(mfrow=c(2,2))
+agg_data %>% group_by(PredictDate) %>% summarise(Means = mean(ProcessMemory)) %>% plot(main = "ProcessMemory")
+agg_data %>% group_by(PredictDate) %>% summarise(Means = mean(Prediction)) %>% plot(main = "Prediction")
+agg_data %>% group_by(PredictDate) %>% summarise(Means = mean(PredictionTimeMS)) %>% plot(main = "PredictionTimeMS")
+```
 
 
+#### a) Is the memory usage of the server in control?
+
+**Answer:**
+
+No, the memory usage is not in control with respect to the xbar chart.
+
+* The longest.run breaches the longest.run.max. The "run" failure is signaled by runs.signal at 1. There are consecutive process points without crossing the mean line in a period from Feburary to April shown on the xbar chart.
+* There are nine red points shown on the xbar chart and sigmar.signal is 9 indicates breaches identified by Shewhart's 3-sigma rule.
+
+```{r ProcessMemory}
+par(mfrow=c(1,1))
+p_xbar <- qicharts2::qic(x = PredictDate, y = ProcessMemory, data = agg_data, chart = "xbar", freeze = 20, subtitle = "Memory Usage (Sample Means Limit First 20 Days)")
+p_std <- qicharts2::qic(x = PredictDate, y = ProcessMemory, data = agg_data, chart = "s", freeze = 20, subtitle = "Memory usage (Sample Standard Deviations Limit First 20 Days)")
+plot(p_xbar)
+plot(p_std)
+
+df_summ <- bind_rows(summary(p_xbar), summary(p_std))
+rownames(df_summ) <- c("xbar","s")
+
+df_summ %>% select(longest.run, longest.run.max,n.crossings,n.crossings.min,runs.signal,sigma.signal)
+```
+
+
+#### b) Is the prediction time of the model in control?
+
+**Answer:**
+
+No, the prediction time is not in control with respect to the s chart.
+
+* The longest.run at 12 breaches the longest.run.max at 10. The "run" failure is signaled by runs.signal at 1.
+* The n.crossings at 31 breaches the n.crossing.min at 37. There is unusually few crossing the of the process points. The "run" failure is signaled by runs.signal at 1.
+* There are four red points shown on the s chart and sigmar.signal is 4 indicates breaches.
+
+
+```{r, PredictionTimeMS}
+p_xbar <- qicharts2::qic(x = PredictDate, y = PredictionTimeMS, data = agg_data, chart = "xbar", freeze = 20, subtitle = "PredictionTimeMS Usage (Sample Means Limit First 20 Days)")
+p_std <- qicharts2::qic(x = PredictDate, y = PredictionTimeMS, data = agg_data, chart = "s", freeze = 20, subtitle = "PredictionTimeMS usage (Sample Standard Deviations Limit First 20 Days)")
+plot(p_xbar)
+plot(p_std)
+
+df_summ <- bind_rows(summary(p_xbar), summary(p_std))
+rownames(df_summ) <- c("xbar","s")
+
+df_summ %>% select(longest.run, longest.run.max,n.crossings,n.crossings.min,runs.signal,sigma.signal)
+```
+
+
+#### c) Is the stream of predictions in control?
+
+**Answer:**
+
+No, the stream of prediction is not in control with respect to the s chart.
+
+* The longest.run at 35 breaches the longest.run.max at 10. The "run" failure is signaled by runs.signal at 1.
+* The n.crossings at 18 breaches the n.crossing.min at 37. There is unusually few crossing the of the process points. The "run" failure is signaled by runs.signal at 1.
+
+```{r, Prediction}
+p_xbar <- qicharts2::qic(x = PredictDate, y = Prediction, data = agg_data, chart = "xbar", freeze = 20, subtitle = "Prediction (Sample Means Limit First 20 Days)")
+p_std <- qicharts2::qic(x = PredictDate, y = Prediction, data = agg_data, chart = "s", freeze = 20, subtitle = "Prediction (Sample Standard Deviations Limit First 20 Days)")
+plot(p_xbar)
+plot(p_std)
+
+df_summ <- bind_rows(summary(p_xbar), summary(p_std))
+rownames(df_summ) <- c("xbar","s")
+
+df_summ %>% select(longest.run, longest.run.max,n.crossings,n.crossings.min,runs.signal,sigma.signal)
+```
 

@@ -1,0 +1,74 @@
+---
+output: html_notebook
+---
+**Course:** STAT448-20S1
+
+**Name:** Zhen Huang  **ID:** 74093323
+
+**Name:** Neha Thakkar  **ID:** 51192498
+
+---
+
+## STAT448-Assignment 1
+
+---
+```{r}
+library(e1071)
+```
+### Q1
+#### (c) Perform the same matrix algebra calculations of part (a) using R.
+```{r}
+# Let matrix order (3x1) be response variable Y
+Y <- matrix(c(5,9,13),nrow=3,ncol=1)
+# Let matrix order (3x2) be explanatory variable X
+x <- c(3,4,5)
+X <- matrix(c(rep(1,3),x), nrow = 3, ncol = 2)
+```
+Perform part (a) using R, work with OLS solution to estimate coefficient \(\hat{B}=(X^TX)^{-1}X^Ty\) .
+```{r}
+B <- solve(t(X)%*%(X))%*%t(X)%*%Y # calculate the coefficients vector with R code.
+B
+```
+Perform part (b) using R, the estimated residuals can be written: \(\hat{\epsilon}=y-X\hat{B}\)
+```{r}
+e <- Y - X%*%B # perform above formula with R code.
+e # The output are not zero, because R uses binary decimal to represent the number, which approximately equal to zero.
+```
+
+#### (d) Estimate the coefficients using the function lm in R.
+```{r}
+my_lm <- lm(Y~x)
+my_lm
+plot(Y~x)
+abline(my_lm,col='blue')
+```
+
+---
+
+### Q2
+#### (a) What happens to the coefficient estimates?
+The coefficient estimates cannot be worked out, since we cannot calculate \((X_1^TX_1)^{-1}\) when \(X_1=\begin{bmatrix}
+1 & 2\\
+1 & 2\\ 
+1 & 2\end{bmatrix}\), the inverse of maxtrix \((X_1^TX_1)=\begin{bmatrix} 3 & 6\\6 & 12\end{bmatrix}\) cannot be "solved", becuase the determinent of  \((X_1^TX_1)\) is 0.
+```{r}
+x1 <- c(rep(2,3))
+X1 <- matrix(c(rep(1,3),x1), nrow = 3, ncol = 2)
+X1
+det1 <- det(t(X1)%*%X) # |X'X| = 0
+det1
+```
+#### (b) Please give both a statistical and geometric explanation of this situation.
+When we calculated for above question, the inverse of maxtrix \((X_1^TX_1)=\begin{bmatrix} 3 & 6\\6 & 12\end{bmatrix}\) cannot be "solved", becuase the determinent of  \((X_1^TX_1)\) is 0. In another word, "It is a necessary and sufficient condition that A must be non-singular for the inverse to exist".
+
+The correlation coefficient cannot be calculated as well, because \(\rho_{xy}=\frac{Cov(x,y)}{\sqrt{Var(x)Var(y)}}\), but \(Var(x)=0\)
+
+The graph below shows that the values of y has no relationion with values of x, in which \(\beta_1 \to \infty\).
+```{r}
+plot(x1, Y) # vetor x1 is {2,2,2}
+abline(v=2, col='blue')
+```
+
+```{r SLR_3D}
+
+```
